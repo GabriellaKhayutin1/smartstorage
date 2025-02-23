@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pantry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- 🔹 Always Visible Navbar -->
+    <nav class="navbar fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
+        <div class="flex items-center space-x-4">
+            <img src="images/logo.png" alt="Logo" class="h-16 w-16 rounded-full">
+            <span class="text-3xl font-bold text-green-900 tracking-wide">Smart Pantry</span>
+        </div>
+        <div class="space-x-6 flex">
+            <a href="index.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Pantry</a>
+            <a href="profile.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Profile</a>
+        </div>
+    </nav> 
+
+    <!-- 🎨 Full-Screen Hero Section with Local Background Image -->
+    <section id="heroSection"
+        class="hero-section fixed top-0 w-full h-screen flex flex-col justify-center items-center text-center bg-cover bg-center pt-24"
+        style="background-image: url('/images/pexels-goumbik-616401.jpg');">
+
+        <!-- 📝 Text Content -->
+        <div class="relative max-w-3xl px-10">
+            <h1 class="text-6xl font-extrabold text-white leading-tight drop-shadow-lg">
+                We Save <span class="text-yellow-400 italic">Food</span><br>
+                Companies Time & Money
+            </h1>
+            <p class="text-lg text-green-900 mt-4">
+                Smarter logistics, better ingredient and packaging distribution.
+            </p>
+        </div>
+
+        <!-- 🔽 Scroll Indicator at the Bottom -->
+        <div class="absolute bottom-10 flex flex-col items-center animate-bounce">
+            <a href="#pantrySection" class="flex flex-col items-center">
+                <p class="text-md text-white mb-2">Scroll Down</p>
+                <span class="text-4xl text-white">↓</span> <!-- Normal white arrow -->
+            </a>
+        </div>
+    </section>
+
+    <!-- 📦 Full-Screen Pantry Section -->
+    <section id="pantrySection"
+        class="pantry-section relative w-full min-h-screen flex flex-col justify-center items-center bg-cover bg-center"
+        style="background-image: url('/images/pexels-goumbik-616401.jpg');">
+
+        <!-- 🔹 Blurred Overlay -->
+        <div class="absolute inset-0 bg-white/30 backdrop-blur-lg"></div>
+
+        <div id="pantryBox" class="pantry-box relative z-10">
+            <!-- 🏷️ Pantry Title & ➕ Add Button in One Row -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Pantry</h2>
+                <button id="addIngredientBtn"
+                    class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition">
+                    ➕ Add Ingredients
+                </button>
+            </div>
+
+            <!-- 🛒 Ingredient List -->
+            <div id="pantry"></div>
+        </div>
+    </section>
+    <!-- 🔹 Add/Edit Ingredient Modal -->
+    <div id="ingredientModal" class="modal-bg hidden">
+        <div class="modal-content">
+            <h2 class="text-xl font-bold mb-4">➕ Add/Edit an Ingredient</h2>
+
+            <input type="text" id="ingredientName" class="w-full p-2 border rounded mb-3"
+                placeholder="Enter ingredient name...">
+            <input type="date" id="ingredientExpiry" class="w-full p-2 border rounded mb-2">
+
+            <label class="block text-lg font-semibold mb-2">Category</label>
+            <select id="ingredientCategory" class="w-full p-2 border rounded mb-3">
+                <option value="Meat">🥩 Meat</option>
+                <option value="Vegetables">🥦 Vegetables</option>
+                <option value="Dairy">🧀 Dairy</option>
+                <option value="Fruits">🍎 Fruits</option>
+                <option value="Seafood">🐟 Seafood</option>
+                <option value="Other">📦 Other</option>
+            </select>
+
+            <div class="flex justify-end space-x-2">
+                <button id="closeModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                <button id="saveIngredientBtn" class="bg-green-600 text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
