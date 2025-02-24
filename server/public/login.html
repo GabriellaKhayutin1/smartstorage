@@ -5,16 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <script defer src="/js/auth.js"></script>
-    <script defer src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ✅ Tailwind CSS CDN with Custom Theme -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#38bdf8', // Light blue
+              secondary: '#34d399', // Green
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
-    <div class="w-96 p-8 bg-gray-800 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center">Login</h2>
-        <input id="login-email" type="email" placeholder="Email" class="w-full p-2 mt-4 bg-gray-700 rounded">
-        <input id="login-password" type="password" placeholder="Password" class="w-full p-2 mt-4 bg-gray-700 rounded">
-        <button id="login-btn" class="w-full bg-blue-500 hover:bg-blue-700 p-2 mt-4 rounded">Login</button>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
+        <div class="flex justify-center mb-4">
+            <img src="/images/logo.png" alt="Logo" class="w-24 h-24">
+        </div>
+        <h2 class="text-2xl font-bold text-center mb-4">Welcome Back</h2>
+        <p class="text-sm text-gray-400 text-center mb-6">Login to continue</p>
+        
+        <input id="login-email" type="email" placeholder="Email" class="w-full p-3 mb-4 bg-gray-700 rounded focus:ring-2 focus:ring-primary">
+        <input id="login-password" type="password" placeholder="Password" class="w-full p-3 mb-4 bg-gray-700 rounded focus:ring-2 focus:ring-primary">
+        
+        <button id="login-btn" class="w-full bg-primary hover:bg-blue-700 text-white p-3 rounded transition">Login</button>
+        
         <p class="text-sm text-center mt-4">
-            No account? <a href="register.html" class="text-blue-400">Register</a>
+            No account? <a href="register.html" class="text-secondary hover:text-green-600">Register</a>
         </p>
     </div>
 </body>
