@@ -6,36 +6,54 @@
     <title>Register</title>
     <script defer src="/js/auth.js"></script>
 
-    <!-- ✅ Tailwind CSS CDN -->
+    <!-- ✅ Tailwind CSS -->
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#38bdf8', // Light blue
-              secondary: '#34d399', // Green
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                primary: "#16A34A",
+                accent: "#22C55E",
+                darkGray: "#1E293B",
+                lightGray: "#F1F5F9",
+              }
             }
           }
         }
-      }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-8 bg-gray-800 rounded-lg shadow-lg">
-        <div class="flex justify-center mb-4">
-            <img src="/images/logo.png" alt="Logo" class="w-24 h-24">
+<body class="relative flex items-center justify-center min-h-screen bg-gray-900">
+    <!-- ✅ Background Image -->
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/pexels-goumbik-616401.jpg');">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div> <!-- ✅ Dark Overlay -->
+    </div>
+
+    <!-- ✅ Register Card -->
+    <div class="relative z-10 w-full max-w-md p-8 bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-2xl border border-gray-300">
+        
+        <!-- ✅ Logo -->
+        <div class="flex justify-center mb-6">
+            <img src="/images/logo.png" alt="Smart Storage Logo" class="w-24 h-24">
         </div>
-        <h2 class="text-2xl font-bold text-center mb-4">Create an Account</h2>
-        <p class="text-sm text-gray-400 text-center mb-6">Sign up to get started</p>
-        
-        <input id="register-email" type="email" placeholder="Email" class="w-full p-3 mb-4 bg-gray-700 rounded focus:ring-2 focus:ring-secondary">
-        <input id="register-password" type="password" placeholder="Password" class="w-full p-3 mb-4 bg-gray-700 rounded focus:ring-2 focus:ring-secondary">
-        
-        <button id="register-btn" class="w-full bg-secondary hover:bg-green-700 text-white p-3 rounded transition">Register</button>
-        
-        <p class="text-sm text-center mt-4">
-            Already have an account? <a href="login.html" class="text-primary hover:text-blue-600">Login</a>
+
+        <h2 class="text-3xl font-bold text-center text-gray-900">Create an Account</h2>
+        <p class="text-md text-gray-500 text-center mb-6">Sign up to get started</p>
+
+        <input id="register-email" type="email" placeholder="Email" 
+            class="w-full p-4 mb-4 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-accent focus:outline-none shadow-sm">
+
+        <input id="register-password" type="password" placeholder="Password" 
+            class="w-full p-4 mb-4 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-accent focus:outline-none shadow-sm">
+
+   <!-- ✅ Updated Register Button (Darker Green) -->
+<button id="register-btn" 
+class="w-full bg-[#15803D] text-white py-4 text-lg rounded-xl transition-all hover:bg-[#166534] active:scale-95 shadow-md font-semibold">
+Register
+</button>
+
+        <p class="text-md text-center mt-6">
+            Already have an account? <a href="login.html" class="text-primary font-semibold hover:underline">Login</a>
         </p>
     </div>
 </body>
