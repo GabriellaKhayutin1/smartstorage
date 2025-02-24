@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 localStorage.setItem("token", data.token);
                 alert("Login successful!");
-                window.location.href = "dashboard.html"; // Redirect to dashboard
+                window.location.href = "http://127.0.0.1:5501"; // Redirect to dashboard
             } catch (error) {
                 console.error("Error logging in:", error);
                 alert(error.message);
