@@ -1,0 +1,179 @@
+/* 🌿 Remove background gradient from body */
+body {
+    background: none; /* No extra background */
+    color: #2e3d2f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* 🔹 Transparent Navbar */
+.navbar {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* ✅ Allow clicks on pantry when scrolling */
+.hero-section {
+    position: absolute; /* ❌ Change from fixed to absolute */
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-image: url('/images/pexels-goumbik-616401.jpg');
+    background-size: cover;
+    background-position: center;
+    z-index: 10; /* ⬇ Reduce z-index so pantry can be clicked */
+    pointer-events: none; /* ✅ Allows clicks to pass through when scrolled */
+}
+
+/* ✅ Ensure Pantry Section is Above Hero */
+.pantry-section {
+    position: relative;
+    z-index: 20; /* ⬆ Move pantry above hero section */
+}
+
+/* Hero Content */
+.hero-text {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 🟠 Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: bounce 1.5s infinite;
+}
+
+.scroll-indicator p {
+    color: orange;
+}
+
+.scroll-indicator span {
+    font-size: 2rem;
+    color: orange;
+}
+
+/* 📦 Pantry Section - Slides Over */
+.pantry-section {
+    position: absolute;
+    top: 100vh;
+    width: 100%;
+    min-height: 100vh;
+    background-image: url('/images/pexels-goumbik-616401.jpg');
+    background-size: cover;
+    background-position: center;
+    transform: translateY(100vh);
+    transition: transform 0.6s ease-out;
+}
+
+/* 🔹 Ensure .blur-overlay does not block interactions */
+.blur-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    pointer-events: none; /* ✅ Fix: Allows clicks to pass through */
+}
+
+
+/* 🌿 Modern Pantry Box */
+.pantry-box {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 900px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.pantry-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* 🛒 Responsive Ingredient Grid */
+.ingredient-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    justify-content: center;
+}
+
+/* 🛒 Modern Ingredient Card */
+.ingredient-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    min-width: 120px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.ingredient-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+#addIngredientBtn {
+    position: relative;
+    z-index: 10; /* ✅ Ensure the button is above any overlays */
+}
+
+/* 🌿 Modal Styling */
+.modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hidden {
+    display: none;
+}
