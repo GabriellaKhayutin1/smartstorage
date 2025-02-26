@@ -74,7 +74,7 @@ async function addIngredient() {
     }
 
     try {
-        let response = await fetch("http://localhost:5001/ingredients", {
+        let response = await fetch("http://localhost:5003/api/ingredients", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -110,7 +110,7 @@ async function updateIngredient(id) {
     console.log("📌 Sending update request for:", { id, name, category, expiryDate });
 
     try {
-        let response = await fetch(`http://localhost:5001/ingredients/${id}`, {
+        let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -133,7 +133,7 @@ async function updateIngredient(id) {
 /* 🔹 Remove an Ingredient */
 async function removeIngredient(id) {
     try {
-        let response = await fetch(`http://localhost:5001/ingredients/${id}`, { method: "DELETE" });
+        let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, { method: "DELETE" });
         if (!response.ok) throw new Error("Failed to delete ingredient");
 
         loadPantry();
@@ -145,7 +145,7 @@ async function removeIngredient(id) {
 /* 🔹 Fetch and Update Pantry UI */
 async function loadPantry() {
     try {
-        const response = await fetch("http://localhost:5001/ingredients");
+        const response = await fetch("http://localhost:5003/api/ingredients");
         if (!response.ok) throw new Error("Failed to fetch ingredients");
 
         const ingredients = await response.json();
