@@ -5,16 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <script defer src="/js/auth.js"></script>
-    <script defer src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ✅ Tailwind CSS -->
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                primary: "#16A34A",
+                accent: "#22C55E",
+                darkGray: "#1E293B",
+                lightGray: "#F1F5F9",
+              }
+            }
+          }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
-    <div class="w-96 p-8 bg-gray-800 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center">Login</h2>
-        <input id="login-email" type="email" placeholder="Email" class="w-full p-2 mt-4 bg-gray-700 rounded">
-        <input id="login-password" type="password" placeholder="Password" class="w-full p-2 mt-4 bg-gray-700 rounded">
-        <button id="login-btn" class="w-full bg-blue-500 hover:bg-blue-700 p-2 mt-4 rounded">Login</button>
-        <p class="text-sm text-center mt-4">
-            No account? <a href="register.html" class="text-blue-400">Register</a>
+<body class="relative flex items-center justify-center min-h-screen bg-gray-900">
+    <!-- ✅ Background Image -->
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/pexels-goumbik-616401.jpg');">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div> <!-- ✅ Dark Overlay -->
+    </div>
+
+    <!-- ✅ Login Card -->
+    <div class="relative z-10 w-full max-w-md p-8 bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-2xl border border-gray-300">
+        
+        <!-- ✅ Logo -->
+        <div class="flex justify-center mb-6">
+            <img src="/images/logo.png" alt="Smart Storage Logo" class="w-24 h-24">
+        </div>
+
+        <h2 class="text-3xl font-bold text-center text-gray-900">Welcome Back</h2>
+        <p class="text-md text-gray-500 text-center mb-6">Login to access your account</p>
+
+        <input id="login-email" type="email" placeholder="Email" 
+            class="w-full p-4 mb-4 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-primary focus:outline-none shadow-sm">
+
+        <input id="login-password" type="password" placeholder="Password" 
+            class="w-full p-4 mb-4 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-primary focus:outline-none shadow-sm">
+
+      <!-- ✅ Updated Login Button (Deep Green) -->
+<button id="login-btn" 
+class="w-full bg-[#0F5132] text-white py-4 text-lg rounded-xl transition-all hover:bg-[#0B3C23] active:scale-95 shadow-md font-semibold">
+Login
+</button>
+
+        <p class="text-md text-center mt-6">
+            No account? <a href="register.html" class="text-primary font-semibold hover:underline">Register</a>
         </p>
     </div>
 </body>
