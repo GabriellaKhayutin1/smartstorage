@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const password = document.getElementById("login-password").value;
 
             try {
-                const response = await fetch("http://localhost:5001/api/auth/login", {  // ✅ FIXED ENDPOINT
+                const response = await fetch("http://localhost:5003/api/auth/login", {  // ✅ FIXED ENDPOINT
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password }),
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const password = document.getElementById("register-password").value;
 
             try {
-                const response = await fetch("http://localhost:5001/api/auth/register", { 
+                const response = await fetch("http://localhost:5003/api/auth/register", { 
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password }),
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 alert("Registration successful! Please login.");
-                window.location.href = "login.html";
+                window.location.href = "/public/login.html";
             } catch (error) {
                 console.error("Error registering:", error);
                 alert(error.message);
