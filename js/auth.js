@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 alert("Registration successful! Please login.");
-                window.location.href = "/public/login.html";
+                window.location.href = "/login.html";
             } catch (error) {
                 console.error("Error registering:", error);
                 alert(error.message);
