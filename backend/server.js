@@ -3,9 +3,11 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import authRoutes from "./routes/authRoutes.js"; // ✅ Authentication routes
+import authRoutes from "./routes/authRoutes.js";
+import authenticate from "./middleware/authMiddleware.js"; // ✅ Import authentication middleware
+import Ingredient from "./models/Ingredient.js";
 
-dotenv.config(); // Load .env variables
+dotenv.config(); // Load environment variables
 
 const app = express();
 
@@ -23,7 +25,7 @@ app.use(cookieParser());
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
     console.error("❌ MONGO_URI is not defined in .env");
-    process.exit(1); // Stop the server if the database is missing
+    process.exit(1); // Stop the server if the database connection fails
 }
 
 mongoose.connect(mongoURI, {
@@ -33,36 +35,43 @@ mongoose.connect(mongoURI, {
 .then(() => console.log("✅ Connected to MongoDB Atlas!"))
 .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-// ✅ Define Schema & Model (Ingredients)
-const ingredientSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    category: { type: String, required: true },
-    expiryDate: { type: Date, required: true }
-});
-
-const Ingredient = mongoose.model("Ingredient", ingredientSchema);
-
 // ✅ API Routes
 app.use("/api/auth", authRoutes); // 🔹 Authentication Routes
 
-// 🔹 Get all ingredients
-app.get("/api/ingredients", async (req, res) => {
-    const ingredients = await Ingredient.find();
-    res.json(ingredients);
+app.get("/api/ingredients", authenticate, async (req, res) => {
+    try {
+        console.log("🔎 Fetching ingredients for user:", req.user.userId);
+
+        const ingredients = await Ingredient.find({ userId: req.user.userId });
+        res.json(ingredients);
+    } catch (error) {
+        console.error("❌ Error fetching ingredients:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
 
-// 🔹 Add an ingredient
-app.post("/api/ingredients", async (req, res) => {
+
+app.post("/api/ingredients", authenticate, async (req, res) => {
     try {
-        console.log("📌 Received Data:", req.body);
+        console.log("📌 Received Data from Client:", req.body);
+        console.log("🔑 User from Token:", req.user); // Log full user object
+        console.log("🔑 Extracted User ID:", req.user?.userId || "❌ No user ID found"); // Fix here
 
         const { name, category, expiryDate } = req.body;
+        const userId = req.user?.userId; // ✅ Fix: Use `userId` instead of `id`
+
+        if (!userId) {
+            console.log("❌ Error: User ID is missing from token!");
+            return res.status(400).json({ error: "User ID is missing from token" });
+        }
 
         if (!name || !category || !expiryDate) {
+            console.log("❌ Error: Missing required data");
             return res.status(400).json({ error: "Missing data" });
         }
 
         const newIngredient = new Ingredient({
+            userId,  // ✅ Ensure userId is stored
             name,
             category,
             expiryDate: new Date(expiryDate)
@@ -70,15 +79,18 @@ app.post("/api/ingredients", async (req, res) => {
 
         await newIngredient.save();
         console.log("✅ Saved Ingredient:", newIngredient);
-        res.json(newIngredient);
+        res.status(201).json(newIngredient);
     } catch (error) {
         console.error("❌ Error saving ingredient:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// 🔹 Update an ingredient
-app.put("/api/ingredients/:id", async (req, res) => {
+
+
+
+// 🔹 Update an ingredient (Requires authentication)
+app.put("/api/ingredients/:id", authenticate, async (req, res) => {
     try {
         const { name, category, expiryDate } = req.body;
 
@@ -86,14 +98,14 @@ app.put("/api/ingredients/:id", async (req, res) => {
             return res.status(400).json({ error: "Missing data" });
         }
 
-        const updatedIngredient = await Ingredient.findByIdAndUpdate(
-            req.params.id,
+        const updatedIngredient = await Ingredient.findOneAndUpdate(
+            { _id: req.params.id, userId: req.user.id }, // ✅ Ensure user can only update their own ingredients
             { name, category, expiryDate: new Date(expiryDate) },
             { new: true }
         );
 
         if (!updatedIngredient) {
-            return res.status(404).json({ error: "Ingredient not found" });
+            return res.status(404).json({ error: "Ingredient not found or unauthorized" });
         }
 
         res.json(updatedIngredient);
@@ -103,11 +115,23 @@ app.put("/api/ingredients/:id", async (req, res) => {
     }
 });
 
-// 🔹 Delete an ingredient
-app.delete("/api/ingredients/:id", async (req, res) => {
-    await Ingredient.findByIdAndDelete(req.params.id);
-    res.json({ message: "Ingredient deleted" });
+// 🔹 Delete an ingredient (only if it belongs to the user)
+app.delete("/api/ingredients/:id", authenticate, async (req, res) => {
+    try {
+        const ingredient = await Ingredient.findOne({ _id: req.params.id, userId: req.user.userId });
+
+        if (!ingredient) {
+            return res.status(404).json({ error: "Ingredient not found or unauthorized" });
+        }
+
+        await Ingredient.findByIdAndDelete(req.params.id);
+        res.json({ message: "Ingredient deleted" });
+    } catch (error) {
+        console.error("❌ Error deleting ingredient:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
 });
+
 
 // ✅ Start the Server
 const PORT = process.env.PORT || 5003;
