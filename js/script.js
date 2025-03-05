@@ -60,23 +60,33 @@ function hideModal() {
     document.getElementById("ingredientModal").classList.add("hidden");
 }
 
-/* 🔹 Add Ingredient */
 async function addIngredient() {
     let name = document.getElementById("ingredientName").value.trim();
     let category = document.getElementById("ingredientCategory").value;
     let expiryDate = document.getElementById("ingredientExpiry").value;
 
-    console.log("📌 Data before sending:", { name, category, expiryDate }); // Debugging
+    console.log("📌 Data before sending:", { name, category, expiryDate });
 
     if (!name || !expiryDate) {
         alert("⚠ Please enter an ingredient name and expiry date!");
         return;
     }
 
+    // ✅ Get the stored token from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("⚠ You must log in first!");
+        window.location.href = "login.html"; // Redirect to login if no token
+        return;
+    }
+
     try {
         let response = await fetch("http://localhost:5003/api/ingredients", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token // ✅ Attach token
+            },
             body: JSON.stringify({
                 name,
                 category,
@@ -85,16 +95,18 @@ async function addIngredient() {
         });
 
         let data = await response.json();
-        console.log("✅ Response from server:", data); // Debugging response
+        console.log("✅ Response from server:", data);
 
-        if (!response.ok) throw new Error("Failed to add ingredient");
+        if (!response.ok) throw new Error(data.error || "Failed to add ingredient");
 
         hideModal();
         loadPantry();
     } catch (error) {
         console.error("❌ Error adding ingredient:", error);
+        alert(error.message);
     }
 }
+
 
 /* 🔹 Update Ingredient */
 async function updateIngredient(id) {
@@ -130,40 +142,87 @@ async function updateIngredient(id) {
     }
 }
 
-/* 🔹 Remove an Ingredient */
+/* 🔹 Remove an Ingredient with Confirmation */
 async function removeIngredient(id) {
+    // ✅ Show confirmation popup before deleting
+    const confirmDelete = confirm("🛑 Are you sure you want to delete this ingredient?");
+    if (!confirmDelete) return; // 🚫 Stop if the user cancels
+
+    // ✅ Get token from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("⚠ You must log in first!");
+        window.location.href = "login.html"; // Redirect to login
+        return;
+    }
+
     try {
-        let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, { method: "DELETE" });
+        let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, {
+            method: "DELETE",
+            headers: { 
+                "Authorization": "Bearer " + token, // ✅ Attach token
+                "Content-Type": "application/json"
+            }
+        });
+
         if (!response.ok) throw new Error("Failed to delete ingredient");
 
-        loadPantry();
+        console.log(`✅ Ingredient deleted successfully: ${id}`);
+        loadPantry(); // ✅ Reload pantry after deletion
     } catch (error) {
         console.error("❌ Error removing ingredient:", error);
+        alert(error.message);
     }
 }
 
+
 /* 🔹 Fetch and Update Pantry UI */
 async function loadPantry() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("⚠ You must log in first!");
+        window.location.href = "login.html"; // Redirect to login if no token
+        return;
+    }
+
     try {
-        const response = await fetch("http://localhost:5003/api/ingredients");
+        const response = await fetch("http://localhost:5003/api/ingredients", {
+            method: "GET",
+            headers: { 
+                "Authorization": "Bearer " + token, // ✅ Attach token
+                "Content-Type": "application/json"
+            }
+        });
+
         if (!response.ok) throw new Error("Failed to fetch ingredients");
 
         const ingredients = await response.json();
+        console.log("✅ Loaded Ingredients:", ingredients);
         updatePantryUI(ingredients);
     } catch (error) {
         console.error("❌ Error loading pantry:", error);
     }
 }
 
+
+/* 🔹 Update Pantry UI */
 /* 🔹 Update Pantry UI */
 function updatePantryUI(ingredients) {
     const pantryDiv = document.getElementById("pantry");
-    pantryDiv.innerHTML = ""; // ✅ Clear pantry list before refreshing
+    if (!pantryDiv) {
+        console.error("❌ Pantry element not found!");
+        return;
+    }
+
+    pantryDiv.innerHTML = ""; // ✅ Clear previous content
 
     const categories = {};
 
+    // ✅ Group ingredients by category
     ingredients.forEach(item => {
-        if (!categories[item.category]) categories[item.category] = [];
+        if (!categories[item.category]) {
+            categories[item.category] = [];
+        }
         categories[item.category].push(item);
     });
 
@@ -182,7 +241,7 @@ function updatePantryUI(ingredients) {
             const card = document.createElement("div");
             card.className = "ingredient-card flex justify-between p-4 bg-white shadow rounded-md";
 
-            // ✅ Ensure expiry date format is correct
+            // ✅ Format expiry date
             let formattedDate = "Unknown";
             if (item.expiryDate) {
                 const dateObj = new Date(item.expiryDate);
@@ -224,6 +283,7 @@ function updatePantryUI(ingredients) {
         pantryDiv.appendChild(categoryDiv);
     });
 }
+
 
 /* 🔹 Smooth Scroll Animation for Pantry Section */
 document.addEventListener("scroll", () => {
