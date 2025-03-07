@@ -60,45 +60,44 @@ function hideModal() {
     document.getElementById("ingredientModal").classList.add("hidden");
 }
 
+// Function to add an ingredient
 async function addIngredient() {
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    if (!token) {
+        alert("⚠ You must log in first!");
+        window.location.href = "login.html";  // Redirect to login if no token
+        return;
+    }
+
     let name = document.getElementById("ingredientName").value.trim();
     let category = document.getElementById("ingredientCategory").value;
     let expiryDate = document.getElementById("ingredientExpiry").value;
-
-    console.log("📌 Data before sending:", { name, category, expiryDate });
 
     if (!name || !expiryDate) {
         alert("⚠ Please enter an ingredient name and expiry date!");
         return;
     }
 
-    // ✅ Get the stored token from localStorage
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("⚠ You must log in first!");
-        window.location.href = "login.html"; // Redirect to login if no token
-        return;
-    }
-
     try {
-        let response = await fetch("http://localhost:5003/api/ingredients", {
+        const response = await fetch("http://localhost:5003/api/ingredients", {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + token // ✅ Attach token
+                "Authorization": "Bearer " + token // Attach token from localStorage
             },
             body: JSON.stringify({
                 name,
                 category,
-                expiryDate: new Date(expiryDate).toISOString() // ✅ Convert expiryDate to ISO format
+                expiryDate: new Date(expiryDate).toISOString() // Convert expiryDate to ISO format
             })
         });
 
-        let data = await response.json();
+        const data = await response.json();
         console.log("✅ Response from server:", data);
 
         if (!response.ok) throw new Error(data.error || "Failed to add ingredient");
 
+        // Hide the modal and reload the pantry
         hideModal();
         loadPantry();
     } catch (error) {
@@ -106,6 +105,10 @@ async function addIngredient() {
         alert(error.message);
     }
 }
+
+// Attach the addIngredient function to the Add Ingredient button
+document.getElementById("saveIngredientBtn").addEventListener("click", addIngredient);
+
 
 
 /* 🔹 Update Ingredient */
@@ -119,12 +122,22 @@ async function updateIngredient(id) {
         return;
     }
 
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    if (!token) {
+        alert("⚠ You must log in first!");
+        window.location.href = "login.html";
+        return;
+    }
+
     console.log("📌 Sending update request for:", { id, name, category, expiryDate });
 
     try {
         let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`  // Add token to the Authorization header
+            },
             body: JSON.stringify({
                 name,
                 category,
@@ -149,7 +162,7 @@ async function removeIngredient(id) {
     if (!confirmDelete) return; // 🚫 Stop if the user cancels
 
     // ✅ Get token from localStorage
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
     if (!token) {
         alert("⚠ You must log in first!");
         window.location.href = "login.html"; // Redirect to login
@@ -178,7 +191,7 @@ async function removeIngredient(id) {
 
 /* 🔹 Fetch and Update Pantry UI */
 async function loadPantry() {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
     if (!token) {
         alert("⚠ You must log in first!");
         window.location.href = "login.html"; // Redirect to login if no token
