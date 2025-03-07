@@ -48,3 +48,54 @@ router.post("/login", async (req, res) => {
 });
 
 export default router;
+
+// POST /api/auth/register - Register a new user
+router.post("/register", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Check if both email and password are provided
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email and password are required" });
+        }
+
+        // Check if the email is already registered
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: "User already exists" });
+        }
+
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create the new user
+        const user = new User({
+            email,
+            password: hashedPassword,  // Store hashed password
+            refreshToken: "",          // Optional, can be populated if the user logs in via Google later
+        });
+
+        // Save the user
+        await user.save();
+
+        // Generate a JWT token
+        const token = jwt.sign(
+            { userId: user._id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        // Send response back with the token
+        res.json({
+            message: "Registration successful",
+            token,  // JWT token for user authentication
+            user: {
+                id: user._id,
+                email: user.email,
+            }
+        });
+    } catch (error) {
+        console.error("❌ Registration error:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
