@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Pantry</title>
+    <script type="module" src="js/co2Calculator.js"></script>
+    <script type="module" src="js/script.js"></script>    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -64,6 +66,11 @@
                     ➕ Add Ingredients
                 </button>
             </div>
+                        <!-- ✅ CO₂ Savings Display -->
+<div id="co2-savings" class="text-lg font-semibold text-green-600 mt-4">
+    🌍 CO₂ Saved: 0 kg
+</div>
+
 
             <!-- 🛒 Ingredient List -->
             <div id="pantry"></div>
@@ -87,6 +94,7 @@
                 <option value="Seafood">🐟 Seafood</option>
                 <option value="Other">📦 Other</option>
             </select>
+
 
             <div class="flex justify-end space-x-2">
                 <button id="closeModalBtn" class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
@@ -130,5 +138,6 @@
     
 
 </body>
+
 
 </html>
