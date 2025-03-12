@@ -8,36 +8,46 @@ const router = express.Router();
 // ✅ User Login Route
 router.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, googleId } = req.body;  // Capture the googleId from request
 
         // 🔹 Check if the user exists
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
+
         if (!user) {
             return res.status(400).json({ error: "User not found" });
         }
 
-        // 🔹 Validate Password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: "Invalid credentials" });
+        // If the user logs in with Google and doesn't have a Google ID, set it
+        if (googleId && !user.googleId) {
+            user.googleId = googleId;
+            await user.save();  // Save the updated user
         }
 
-        // ✅ Generate JWT Token (Make sure `userId` is stored)
+        // If the user logs in with email and password, validate password
+        if (password) {
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ error: "Invalid credentials" });
+            }
+        }
+
+        // ✅ Generate JWT Token, including googleId if it exists
         const token = jwt.sign(
-            { userId: user._id, email: user.email }, // 🔹 Change `id` to `userId`
+            { userId: user._id, email: user.email, googleId: user.googleId || null },  // Include googleId in the token
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
 
-        console.log("Generated Token:", token);  // 🔹 Debugging: Check if token is created
+        console.log("Generated Token:", token);  // Debugging: Check if token is created
 
         // ✅ Send token in response
         res.json({
             message: "Login successful",
-            token,  // 🔹 Ensure token is included
+            token,
             user: {
                 id: user._id,
-                email: user.email
+                email: user.email,
+                googleId: user.googleId  // Include googleId in the response if it's available
             }
         });
 
@@ -46,6 +56,7 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
 
 export default router;
 
