@@ -1,3 +1,4 @@
+import { CO2_SAVINGS } from "./co2Calculator.js";
 document.addEventListener("DOMContentLoaded", () => {
     loadPantry();
 
@@ -212,8 +213,21 @@ async function loadPantry() {
         const ingredients = await response.json();
         console.log("✅ Loaded Ingredients:", ingredients);
         updatePantryUI(ingredients);
+    // ✅ Calculate and display CO₂ savings
+    updateCO2Component(ingredients);
     } catch (error) {
         console.error("❌ Error loading pantry:", error);
+    }
+}
+/* 🔹 Update CO₂ Savings Display */
+function updateCO2Component(ingredients) {
+    const co2Saved = calculateCO2Savings(ingredients); // ✅ Calculate CO₂ savings
+    const co2Element = document.getElementById("co2-savings");
+
+    if (co2Element) {
+        co2Element.innerText = `🌍 CO₂ Saved: ${co2Saved} kg`;
+    } else {
+        console.warn("⚠ CO₂ Savings element not found!");
     }
 }
 
@@ -310,3 +324,14 @@ document.addEventListener("scroll", () => {
     // ✅ Adjust hero section opacity as it gets covered
     heroSection.style.opacity = Math.max(0, 1 - (scrollPosition / window.innerHeight));
 });
+/* 🔹 Calculate Total CO₂ Savings */
+function calculateCO2Savings(ingredients) {
+    let totalCO2Saved = 0;
+
+    ingredients.forEach(item => {
+        const co2Value = CO2_SAVINGS[item.category] || 0; // Default to 0 if category not found
+        totalCO2Saved += co2Value;
+    });
+
+    return totalCO2Saved.toFixed(2); // ✅ Keep two decimal places
+}
