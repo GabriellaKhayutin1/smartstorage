@@ -96,6 +96,39 @@
     </div>
 
     <script src="js/script.js"></script>
+    <!-- This goes in your index.html (or the page where you redirect after successful login) -->
+   
+        <script>
+    // Extract the token from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+        // Store the JWT token securely in localStorage
+        localStorage.setItem('authToken', token);
+        console.log('✅ Token received and stored:', token);
+
+        // Remove the token from the URL to prevent it from being visible
+        window.history.replaceState(null, null, window.location.pathname);
+
+        // Optionally, you can update the UI here (e.g., show a welcome message)
+        // or let the user stay on the index page.
+
+        // Example: Show a welcome message or change button to "Logged In"
+        const loginButton = document.getElementById('google-login-btn');
+        if (loginButton) {
+            loginButton.textContent = "Logged In";  // Change button text to indicate login success
+        }
+
+        // Optional: Show a welcome message or profile info (if desired)
+        const welcomeMessage = document.createElement('p');
+        welcomeMessage.textContent = "Welcome! You're logged in.";
+        document.body.appendChild(welcomeMessage);
+    }
+</script>
+
+    
+
 </body>
 
 </html>
