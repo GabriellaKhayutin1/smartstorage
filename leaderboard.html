@@ -1,0 +1,28 @@
+document.addEventListener("DOMContentLoaded", async () => {
+    const leaderboardBody = document.getElementById("leaderboard-body");
+
+    try {
+        const response = await fetch("http://localhost:5003/api/leaderboard/waste-reduction");
+        if (!response.ok) throw new Error("API request failed");
+
+        const leaderboard = await response.json();
+        if (!leaderboard.length) throw new Error("No data received");
+
+        leaderboardBody.innerHTML = leaderboard.map((user, index) => {
+            let rowClass = index === 0 ? "gold" : index === 1 ? "silver" : index === 2 ? "bronze" : "normal";
+
+            return `
+                <tr class="leaderboard-row text-center transition-all duration-300 ease-in-out ${rowClass}">
+                    <td class="p-3">${index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : index + 1}</td>
+                    <td class="p-3">${user.email}</td>
+                    <td class="p-3">${user.expiredItems}</td>
+                    <td class="p-3">${user.co2Saved.toFixed(2)} kg</td>
+                </tr>
+            `;
+        }).join("");
+
+    } catch (error) {
+        console.error("❌ Error loading leaderboard:", error);
+        leaderboardBody.innerHTML = `<tr><td colspan="4" class="p-3 text-red-500 text-center">⚠️ ${error.message}</td></tr>`;
+    }
+});
