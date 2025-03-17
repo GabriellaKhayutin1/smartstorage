@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Smart Pantry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: url('/images/pexels-photo-349610.jpeg') no-repeat center center fixed;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-20">
+    
+    <!-- 🔹 Navbar -->
+    <nav class="fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-40 backdrop-blur-lg rounded-b-xl">
+        <div class="flex items-center space-x-4">
+            <img src="images/logo.png" alt="Logo" class="h-14 w-14 rounded-full shadow-md">
+            <span class="text-2xl font-bold text-green-800 tracking-wide">Smart Pantry</span>
+        </div>
+        <div class="space-x-6 flex">
+            <a href="index.html" class="text-lg font-semibold text-white bg-green-700 px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-green-900">Pantry</a>
+            <a href="profile.html" class="text-lg font-semibold text-white bg-green-700 px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-green-900">Profile</a>
+        </div>
+    </nav>
+
+    <!-- 🌟 Leaderboard Section -->
+<div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl p-8 mt-10">
+    <h1 class="text-4xl font-extrabold text-center text-green-800">🏆 Leaderboard</h1>
+    <p class="text-center text-gray-600 mb-6">
+        This leaderboard ranks users based on their sustainability impact. 
+        The more CO₂ you save by reducing food waste, the higher your rank! 
+        The top three users are featured on the podium, while others appear in the ranking list below. 
+        Keep minimizing waste and climb the leaderboard! 🌱✨
+    </p>
+
+    <!-- 🏅 Podium (Top 3) -->
+    <div class="flex justify-center items-end mt-6 space-x-6">
+        <div class="flex flex-col items-center">
+            <div class="w-20 h-32 bg-gray-300 rounded-lg flex flex-col justify-end items-center pb-3 shadow-lg">
+                🥈
+            </div>
+            <span class="text-sm font-bold text-gray-700 mt-2" id="second-place-name"></span>
+            <span class="text-sm text-gray-600" id="second-place-co2"></span>
+            <span class="mt-2 font-semibold">2nd Place</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <div class="w-24 h-40 bg-yellow-400 rounded-lg flex flex-col justify-end items-center pb-3 shadow-xl text-white text-xl font-bold">
+                🥇
+            </div>
+            <span class="text-sm font-bold text-gray-800 mt-2" id="first-place-name"></span>
+            <span class="text-sm text-gray-700" id="first-place-co2"></span>
+            <span class="mt-2 font-semibold">1st Place</span>
+        </div>
+        <div class="flex flex-col items-center">
+            <div class="w-16 h-28 bg-orange-500 rounded-lg flex flex-col justify-end items-center pb-3 shadow-md">
+                🥉
+            </div>
+            <span class="text-sm font-bold text-gray-700 mt-2" id="third-place-name"></span>
+            <span class="text-sm text-gray-600" id="third-place-co2"></span>
+            <span class="mt-2 font-semibold">3rd Place</span>
+        </div>
+    </div>
+
+    <!-- 📋 Leaderboard List (4-10) -->
+    <div class="mt-6 bg-white rounded-lg p-4 shadow-md border border-gray-300">
+        <table class="w-full text-gray-700 border-collapse">
+            <thead>
+                <tr class="bg-green-600 text-white text-lg">
+                    <th class="p-3 text-left rounded-tl-lg">Rank</th>
+                    <th class="p-3 text-left">User</th>
+                    <th class="p-3 text-left rounded-tr-lg">CO₂ Saved (kg)</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body" class="divide-y divide-gray-300">
+                <!-- Dynamic Data Here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+    <script>
+       document.addEventListener("DOMContentLoaded", async () => {
+    const leaderboardBody = document.getElementById("leaderboard-body");
+    const firstPlaceName = document.getElementById("first-place-name");
+    const firstPlaceCO2 = document.getElementById("first-place-co2");
+    const secondPlaceName = document.getElementById("second-place-name");
+    const secondPlaceCO2 = document.getElementById("second-place-co2");
+    const thirdPlaceName = document.getElementById("third-place-name");
+    const thirdPlaceCO2 = document.getElementById("third-place-co2");
+
+    try {
+        const response = await fetch("http://localhost:5003/api/leaderboard/waste-reduction");
+        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+
+        const leaderboard = await response.json();
+        if (!Array.isArray(leaderboard) || leaderboard.length === 0) throw new Error("No leaderboard data received");
+
+        const extractName = (email) => email.split("@")[0];
+
+        if (leaderboard[0]) {
+            firstPlaceName.textContent = extractName(leaderboard[0].email);
+            firstPlaceCO2.textContent = `${leaderboard[0].co2Saved.toFixed(2)} kg`;
+        }
+        if (leaderboard[1]) {
+            secondPlaceName.textContent = extractName(leaderboard[1].email);
+            secondPlaceCO2.textContent = `${leaderboard[1].co2Saved.toFixed(2)} kg`;
+        }
+        if (leaderboard[2]) {
+            thirdPlaceName.textContent = extractName(leaderboard[2].email);
+            thirdPlaceCO2.textContent = `${leaderboard[2].co2Saved.toFixed(2)} kg`;
+        }
+
+        leaderboardBody.innerHTML = leaderboard.slice(3, 10).map((user, index) => `
+            <tr class="text-lg text-gray-700 border-b hover:bg-gray-100 transition duration-300">
+                <td class="p-3">${index + 4}</td>
+                <td class="p-3">${extractName(user.email)}</td>
+                <td class="p-3">${user.co2Saved.toFixed(2)} kg</td>
+            </tr>
+        `).join("");
+
+    } catch (error) {
+        console.error("❌ Error loading leaderboard:", error);
+        leaderboardBody.innerHTML = `<tr><td colspan="3" class="p-3 text-red-500 text-center">⚠️ ${error.message}</td></tr>`;
+    }
+});
+
+    </script>
+</body>
+</html>
