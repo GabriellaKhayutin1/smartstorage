@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <script defer src="/js/auth.js"></script>
-
-    <!-- ✅ Tailwind CSS -->
-    
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="relative flex items-center justify-center min-h-screen bg-gray-900">
+
     <!-- ✅ Background Image -->
     <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/pexels-goumbik-616401.jpg');">
-        <div class="absolute inset-0 bg-black bg-opacity-50"></div> <!-- ✅ Dark Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div> <!-- Dark Overlay -->
     </div>
 
     <!-- ✅ Login Card -->
@@ -25,39 +25,23 @@
         </div>
 
         <h2 class="text-3xl font-bold text-center text-gray-900">Welcome Back</h2>
-        <p class="text-md text-gray-500 text-center mb-6">Login to access your account</p>
-
-        <input id="login-email" type="email" placeholder="Email" 
-            class="w-full p-4 mb-4 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-primary focus:outline-none shadow-sm">
-
-        <input id="login-password" type="password" placeholder="Password" 
-            class="w-full p-4 mb-4 border border-gray-300 rounded-xl text-lg focus:ring-2 focus:ring-primary focus:outline-none shadow-sm">
-
-        <!-- ✅ Regular Login Button -->
-        <button id="login-btn" 
-            class="w-full bg-[#0F5132] text-white py-4 text-lg rounded-xl transition-all hover:bg-[#0B3C23] active:scale-95 shadow-md font-semibold">
-            Login
-        </button>
+        <p class="text-md text-gray-500 text-center mb-6">Sign in using Google</p>
 
         <!-- ✅ Google Login Button -->
         <button id="google-login-btn"
-            class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-3 mt-4 text-gray-700 text-lg rounded-xl transition-all hover:bg-gray-100 active:scale-95 shadow-md font-semibold">
+            class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-4 mt-4 text-gray-700 text-lg rounded-xl transition-all hover:bg-gray-100 active:scale-95 shadow-md font-semibold">
             <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6">
             Sign in with Google
         </button>
-
-        <p class="text-md text-center mt-6">
-            No account? <a href="register.html" class="text-primary font-semibold hover:underline">Register</a>
-        </p>
     </div>
+
     <script>
-        document.getElementById("google-login-btn").addEventListener("click", function() {
+        document.getElementById("google-login-btn").addEventListener("click", function () {
             console.log("🔄 Redirecting to Google login...");
-            window.location.href = "http://localhost:5003/auth/google";  // Redirect to backend OAuth route
+            window.location.href = "http://localhost:5003/auth/google";  // Your backend Google OAuth route
         });
     </script>
-    
-    
-        
+
 </body>
+
 </html>
