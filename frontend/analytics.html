@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStorage - Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .waste-stats {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+        .savings-stats {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .tips-card {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">SmartStorage</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="analytics.html">Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="profile.html">Profile</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Your Food Waste Analytics</h2>
+        
+        <!-- Month Selection -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="month" id="monthSelector" class="form-control">
+                    <button class="btn btn-primary" onclick="loadAnalytics()">View Analytics</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Month Stats -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="analytics-card waste-stats">
+                    <h4>Food Waste This Month</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 id="totalFoodWasted">0</h2>
+                            <p>Items Wasted</p>
+                        </div>
+                        <div>
+                            <h2 id="totalMoneyWasted">$0</h2>
+                            <p>Money Wasted</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="analytics-card savings-stats">
+                    <h4>Potential Savings</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 id="potentialSavings">0</h2>
+                            <p>Items Saved</p>
+                        </div>
+                        <div>
+                            <h2 id="moneySaved">$0</h2>
+                            <p>Money Saved</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="analytics-card">
+                    <h4>Most Wasted Foods</h4>
+                    <div class="chart-container">
+                        <canvas id="wastedFoodsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="analytics-card">
+                    <h4>Waste by Category</h4>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="analytics-card tips-card">
+                    <h4>Personalized Tips to Reduce Waste</h4>
+                    <div class="row" id="tipsContainer">
+                        <!-- Tips will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Data -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="analytics-card">
+                    <h4>Historical Waste Trends</h4>
+                    <div class="chart-container">
+                        <canvas id="historicalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let wastedFoodsChart, categoryChart, historicalChart;
+
+        // Initialize charts
+        function initializeCharts() {
+            // Wasted Foods Chart
+            const wastedFoodsCtx = document.getElementById('wastedFoodsChart').getContext('2d');
+            wastedFoodsChart = new Chart(wastedFoodsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Amount Wasted',
+                        data: [],
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(255, 206, 86, 0.5)',
+                            'rgba(75, 192, 192, 0.5)',
+                            'rgba(153, 102, 255, 0.5)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Historical Chart
+            const historicalCtx = document.getElementById('historicalChart').getContext('2d');
+            historicalChart = new Chart(historicalCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Food Items Wasted',
+                        data: [],
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Load analytics data
+        async function loadAnalytics() {
+            try {
+                const monthSelector = document.getElementById('monthSelector');
+                const selectedDate = monthSelector.value ? new Date(monthSelector.value) : new Date();
+                const month = selectedDate.getMonth() + 1;
+                const year = selectedDate.getFullYear();
+
+                // Fetch monthly analytics
+                const monthlyResponse = await fetch(`http://localhost:5003/api/analytics/monthly?month=${month}&year=${year}`, {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const monthlyData = await monthlyResponse.json();
+
+                // Fetch historical data
+                const historicalResponse = await fetch('http://localhost:5003/api/analytics/historical', {
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const historicalData = await historicalResponse.json();
+
+                // Update UI with monthly data
+                document.getElementById('totalFoodWasted').textContent = monthlyData.totalFoodWasted;
+                document.getElementById('totalMoneyWasted').textContent = `$${monthlyData.totalMoneyWasted.toFixed(2)}`;
+
+                // Update wasted foods chart
+                const wastedFoods = monthlyData.wastedFoods.reduce((acc, food) => {
+                    acc[food.name] = (acc[food.name] || 0) + food.amount;
+                    return acc;
+                }, {});
+
+                wastedFoodsChart.data.labels = Object.keys(wastedFoods);
+                wastedFoodsChart.data.datasets[0].data = Object.values(wastedFoods);
+                wastedFoodsChart.update();
+
+                // Update category chart
+                const categories = monthlyData.wastedFoods.reduce((acc, food) => {
+                    acc[food.category] = (acc[food.category] || 0) + food.amount;
+                    return acc;
+                }, {});
+
+                categoryChart.data.labels = Object.keys(categories);
+                categoryChart.data.datasets[0].data = Object.values(categories);
+                categoryChart.update();
+
+                // Update tips
+                const tipsContainer = document.getElementById('tipsContainer');
+                tipsContainer.innerHTML = monthlyData.tips.map(tip => `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                ${tip}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Update historical chart
+                const sortedHistoricalData = historicalData.sort((a, b) => {
+                    return new Date(a.year, a.month - 1) - new Date(b.year, b.month - 1);
+                });
+
+                historicalChart.data.labels = sortedHistoricalData.map(data => 
+                    `${new Date(data.year, data.month - 1).toLocaleString('default', { month: 'short', year: 'numeric' })}`
+                );
+                historicalChart.data.datasets[0].data = sortedHistoricalData.map(data => data.totalFoodWasted);
+                historicalChart.update();
+
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                alert('Failed to load analytics data. Please try again.');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            loadAnalytics();
+        });
+    </script>
+</body>
+</html> 
