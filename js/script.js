@@ -16,6 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (closeButton) {
         closeButton.addEventListener("click", hideModal);
     }
+
+    // Add event listener for save button
+    const saveButton = document.getElementById("saveIngredientBtn");
+    if (saveButton) {
+        saveButton.addEventListener("click", addIngredient);
+    }
 });
 
 /* 🔹 Show Modal (For Adding or Editing) */
@@ -80,30 +86,45 @@ async function addIngredient() {
     }
 
     try {
+        console.log("🔑 Using token:", token); // Debug log
         const response = await fetch("http://localhost:5003/api/ingredients", {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + token // Attach token from localStorage
+                "Authorization": `Bearer ${token}` // Make sure token is properly formatted
             },
             body: JSON.stringify({
                 name,
                 category,
-                expiryDate: new Date(expiryDate).toISOString() // Convert expiryDate to ISO format
+                expiryDate: new Date(expiryDate).toISOString()
             })
         });
+
+        // Log the response status and headers for debugging
+        console.log("📡 Response status:", response.status);
+        console.log("📡 Response headers:", Object.fromEntries(response.headers));
 
         const data = await response.json();
         console.log("✅ Response from server:", data);
 
-        if (!response.ok) throw new Error(data.error || "Failed to add ingredient");
+        if (!response.ok) {
+            if (response.status === 401) {
+                // Token is invalid or expired
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("token");
+                alert("Your session has expired. Please log in again.");
+                window.location.href = "login.html";
+                return;
+            }
+            throw new Error(data.error || "Failed to add ingredient");
+        }
 
         // Hide the modal and reload the pantry
         hideModal();
         loadPantry();
     } catch (error) {
         console.error("❌ Error adding ingredient:", error);
-        alert(error.message);
+        alert(error.message || "Failed to add ingredient. Please try again.");
     }
 }
 
