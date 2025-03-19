@@ -5,6 +5,13 @@ import { CO2_SAVINGS } from "../../js/co2Calculator.js";
 
 const router = express.Router();
 
+// Helper function to extract name from email
+function extractName(email) {
+    if (!email) return 'Anonymous User';
+    const parts = email.split('@');
+    return parts[0] || 'Anonymous User';
+}
+
 // ✅ Default route to check if leaderboard API is working
 router.get("/", (req, res) => {
     res.json({ message: "Leaderboard API is working!" });
@@ -35,6 +42,7 @@ router.get("/waste-reduction", async (req, res) => {
             leaderboard.push({
                 userId: user._id,
                 email: user.email,
+                name: user.name || extractName(user.email),
                 expiredItems: expiredCount,
                 co2Saved,
             });

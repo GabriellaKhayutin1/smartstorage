@@ -3,5 +3,33 @@
     "dotenv": "^16.4.7",
     "express-session": "^1.18.1",
     "googleapis": "^146.0.0"
-  }
+  },
+  "name": "smart-pantry-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tailwindcss -i ./css/input.css -o ./css/style.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabriellaKhayutin1/smartstorage.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GabriellaKhayutin1/smartstorage/issues"
+  },
+  "homepage": "https://github.com/GabriellaKhayutin1/smartstorage#readme"
 }
