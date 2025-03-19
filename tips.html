@@ -1,178 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Ingredient Storage Guide</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: url('/images/pexels-photo-349610.jpeg') no-repeat center center fixed;
-      color: white;
-      overflow-x: hidden;
-      position: relative;
-      background-size: cover;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Tips - Smart Pantry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="/js/auth.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f6f9fc 0%, #e9f2f9 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+        }
+        .tip-card {
+            transition: all 0.3s ease;
+        }
+        .tip-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+        .category-badge {
+            transition: all 0.3s ease;
+        }
+        .category-badge:hover {
+            transform: scale(1.05);
+        }
+        .search-input {
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        #chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #5C8D5A;
+            border-radius: 3px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #487148;
+        }
+        .seasonal-item {
+            transition: all 0.3s ease;
+        }
+        .seasonal-item:hover {
+            transform: translateX(5px);
+        }
+        #month-selector {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        #month-selector:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 
-
-    }
-    /* Particle background */
-    #particles-js {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      z-index: -1;
-    }
-    /* Hero Section */
-    .hero {
-      height: 100vh;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      text-align: left;
-      padding-left: 5%;
-      position: relative;
-    }
-    .hero-content {
-      max-width: 600px;
-    }
-    .hero-title {
-      font-size: 5rem;
-      font-weight: bold;
-      text-transform: capitalize;
-      line-height: 1.1;
-    }
-    .hero-subtitle {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-      color: #000000;
-    }
-    /* Floating Card - Larger, with black overlay */
-    .floating-card {
-      position: absolute;
-      padding: 20px;
-      border-radius: 20px;
-      overflow: hidden;
-      width: 500px;
-      height: 300px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      text-align: center;
-      background-size: cover;
-      background-position: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      animation: float 5s ease-in-out infinite;
-      border: 3px solid transparent;
-      background-clip: padding-box;
-    }
-    
-    /* Black overlay with moderate opacity */
-    .floating-card::before {
-      content: '';
-      position: absolute;
-      top: 0; 
-      left: 0; 
-      right: 0; 
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 0;
-      transition: background 0.4s ease;
-    }
-    .floating-card:hover {
-      transform: translateY(-12px) scale(1.07);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    }
-    /* Text styling for floating cards - white for contrast */
-    .floating-card h3 {
-      position: relative;
-      z-index: 1;
-      padding: 12px;
-      border-radius: 10px;
-      margin: 0 10px 4px 10px;
-      color: #fff;
-      font-weight: bold;
-    }
-    .floating-card p {
-      position: relative;
-      z-index: 1;
-      padding: 12px;
-      border-radius: 10px;
-      margin: 0 10px 10px 10px;
-      color: #fff;
-      font-size: 0.85rem;
-    }
-    @keyframes float {
-      0%   { transform: translateY(0); }
-      50%  { transform: translateY(-10px); }
-      100% { transform: translateY(0); }
-    }
-    /* Position & background images for each card */
-    .floating-card.upper {
-      top: 12%;
-      right: 20%;
-      background-image: url('/images/pexels-janetrangdoan-1128678.jpg');
-      margin-top: 50px; /* Moves card below navbar */
-    }
-    .floating-card.lower {
-      top: 52%;
-      right: 8%;
-      transform: translateY(-50%);
-      background-image: url('/images/tips.jpg');
-      margin-top: 50px; /* Moves card below navbar */
-    }
-    /* Scroll Indicator */
-    .scroll-indicator {
-      position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      cursor: pointer;
-      z-index: 10;
-    }
-    .scroll-indicator span {
-      font-size: 2rem;
-      animation: bounce 1.5s infinite;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-5px); }
-    }
-    /* Info Section Tip Cards - New Modern Design */
-    .info-card {
-      background: #fff;
-      color: #2E7D32;
-      padding: 2rem;
-      border-radius: 10px;
-      border-left: 5px solid #2E7D32;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .info-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-    .info-card h3 {
-      margin-bottom: 0.75rem;
-      font-size: 1.25rem;
-    }
-    .info-card p {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-  </style>
 </head>
 <body>
-
-    <nav class="navbar fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
+    <!-- 🔹 Navbar -->
+    <nav class="fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
         <div class="flex items-center space-x-4">
             <img src="images/logo.png" alt="Logo" class="h-16 w-16 rounded-full">
             <span class="text-3xl font-bold text-green-900 tracking-wide">Smart Pantry</span>
@@ -182,224 +84,1108 @@
             <a href="profile.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Profile</a>
             <a href="tips.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Tips</a>
         </div>
-    </nav> 
-  <div id="particles-js"></div>
-  <!-- Hero Section -->
-  <header class="hero relative">
-    <div class="hero-content">
-        <h1 class="hero-title text-green-600">Smart tips & Fun Facts</h1>
-        <p class="hero-subtitle">Explore the best ingredient storage tips and discover surprising food facts to keep your kitchen fresh and efficient!</p>
-        
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 pt-24 pb-12">
+        <!-- Hero Section -->
+        <div class="glass-card rounded-3xl p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Smart Storage Tips</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-6">
+                Discover expert tips and tricks for storing your ingredients properly. 
+                Learn how to extend shelf life, reduce waste, and maintain freshness.
+            </p>
+            <button id="seasonal-button" 
+                    class="bg-[#5C8D5A] text-white px-8 py-3 rounded-full shadow-lg hover:bg-[#487148] transition-all duration-300 hover:scale-105 flex items-center gap-2 mx-auto">
+                <span class="text-2xl">🌱</span>
+                <span>View Seasonal Produce Guide</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="glass-card rounded-3xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="w-full md:w-1/2">
+                    <input type="text" 
+                           placeholder="Search tips..." 
+                           class="search-input w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-green-500">
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-2 w-full md:w-1/2">
+                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">All</button>
+                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Fruits</button>
+                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Vegetables</button>
+                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Dairy</button>
+                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Meat</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Spinach Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🥬</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Spinach</h3>
+                <p class="text-gray-600 mb-4">
+                    After washing, dry spinach thoroughly using a salad spinner or paper towels. 
+                    Store in an airtight container lined with a dry paper towel in the fridge to prolong freshness.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 5-7 days
+                </div>
+            </div>
+
+            <!-- Strawberries Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍓</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Strawberries</h3>
+                <p class="text-gray-600 mb-4">
+                    Rinse strawberries only when ready to eat. Store them in a container lined with paper towels 
+                    in the fridge to absorb moisture and prevent mold.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Cheddar Cheese Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🧀</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Cheddar Cheese</h3>
+                <p class="text-gray-600 mb-4">
+                    Wrap cheddar cheese in parchment paper and then loosely in aluminum foil or a container 
+                    to allow some airflow while keeping moisture out.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-4 weeks
+                </div>
+            </div>
+
+            <!-- Basil Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🌿</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Basil</h3>
+                <p class="text-gray-600 mb-4">
+                    Trim basil stems and place them in a glass with water, covering loosely with a plastic bag, 
+                    or store at room temperature to maintain its fresh flavor.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Lemons Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍋</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Lemons</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in a sealed bag in the fridge to retain juiciness and prevent drying out.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 2-3 weeks
+                </div>
+            </div>
+
+            <!-- Garlic Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🧄</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Garlic</h3>
+                <p class="text-gray-600 mb-4">
+                    Keep in a dry, ventilated area away from sunlight to prevent sprouting.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 months
+                </div>
+            </div>
+
+            <!-- Tomatoes Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🍅</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Tomatoes</h3>
+                <p class="text-gray-600 mb-4">
+                    Store ripe tomatoes stem-side down at room temperature. Once ripe, refrigerate to slow down further ripening.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 5-7 days
+                </div>
+            </div>
+
+            <!-- Apples Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍎</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Apples</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the refrigerator crisper drawer. Keep away from other fruits as they release ethylene gas.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-4 weeks
+                </div>
+            </div>
+
+            <!-- Milk Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🥛</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Milk</h3>
+                <p class="text-gray-600 mb-4">
+                    Keep in the coldest part of the refrigerator, not in the door. Return to fridge immediately after use.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 5-7 days
+                </div>
+            </div>
+
+            <!-- Chicken Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="meat">
+                <div class="text-4xl mb-4">🍗</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Chicken</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the coldest part of the fridge, wrapped in its original packaging or in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 days
+                </div>
+            </div>
+
+            <!-- Bananas Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍌</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Bananas</h3>
+                <p class="text-gray-600 mb-4">
+                    Store at room temperature until ripe, then refrigerate. Wrap stem ends in plastic to slow ripening.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 5-7 days
+                </div>
+            </div>
+
+            <!-- Carrots Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🥕</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Carrots</h3>
+                <p class="text-gray-600 mb-4">
+                    Remove green tops, store in a sealed bag in the crisper drawer. Keep away from ethylene-producing fruits.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 2-3 weeks
+                </div>
+            </div>
+
+            <!-- Yogurt Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🥛</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Yogurt</h3>
+                <p class="text-gray-600 mb-4">
+                    Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Ground Beef Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="meat">
+                <div class="text-4xl mb-4">🥩</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Ground Beef</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the coldest part of the fridge. Use within 1-2 days or freeze for longer storage.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 days
+                </div>
+            </div>
+
+            <!-- Oranges Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍊</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Oranges</h3>
+                <p class="text-gray-600 mb-4">
+                    Store at room temperature for up to a week, or in the refrigerator for longer storage.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Broccoli Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🥦</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Broccoli</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unwashed in a perforated plastic bag in the crisper drawer. Keep away from ethylene-producing fruits.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Grapes Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍇</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Grapes</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unwashed in a perforated bag in the refrigerator. Wash only before eating.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Butter Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🧈</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Butter</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the refrigerator door or butter compartment. Can be kept at room temperature for 1-2 days.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 2-3 weeks
+                </div>
+            </div>
+
+            <!-- Salmon Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="meat">
+                <div class="text-4xl mb-4">🐟</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Salmon</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the coldest part of the fridge, wrapped in plastic wrap or in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 days
+                </div>
+            </div>
+
+            <!-- Bell Peppers Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🫑</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Bell Peppers</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unwashed in the crisper drawer. Keep away from ethylene-producing fruits.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Pineapple Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍍</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Pineapple</h3>
+                <p class="text-gray-600 mb-4">
+                    Store whole pineapple at room temperature until ripe, then refrigerate. Cut pineapple should be stored in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Cottage Cheese Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🧀</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Cottage Cheese</h3>
+                <p class="text-gray-600 mb-4">
+                    Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Pork Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="meat">
+                <div class="text-4xl mb-4">🥩</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Pork</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the coldest part of the fridge, wrapped in its original packaging or in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Mango Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🥭</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Mango</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unripe mangoes at room temperature until ripe, then refrigerate. Cut mango should be stored in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 4-7 days
+                </div>
+            </div>
+
+            <!-- Cauliflower Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🥬</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Cauliflower</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unwashed in a perforated plastic bag in the crisper drawer. Keep away from ethylene-producing fruits.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Kiwi Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🥝</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Kiwi</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unripe kiwis at room temperature until ripe, then refrigerate. Keep away from other fruits.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 weeks
+                </div>
+            </div>
+
+            <!-- Sour Cream Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🥛</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Sour Cream</h3>
+                <p class="text-gray-600 mb-4">
+                    Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 2-3 weeks
+                </div>
+            </div>
+
+            <!-- Tuna Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="meat">
+                <div class="text-4xl mb-4">🐟</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Tuna</h3>
+                <p class="text-gray-600 mb-4">
+                    Store fresh tuna in the coldest part of the fridge, wrapped in plastic wrap or in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 1-2 days
+                </div>
+            </div>
+
+            <!-- Asparagus Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="vegetables">
+                <div class="text-4xl mb-4">🌱</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Asparagus</h3>
+                <p class="text-gray-600 mb-4">
+                    Trim ends and store upright in a glass of water in the refrigerator, or wrap in a damp paper towel.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Pears Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🍐</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Pears</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unripe pears at room temperature until ripe, then refrigerate. Keep away from other fruits.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Cream Cheese Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="dairy">
+                <div class="text-4xl mb-4">🧀</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Cream Cheese</h3>
+                <p class="text-gray-600 mb-4">
+                    Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 2-3 weeks
+                </div>
+            </div>
+
+            <!-- Lamb Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="meat">
+                <div class="text-4xl mb-4">🥩</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Lamb</h3>
+                <p class="text-gray-600 mb-4">
+                    Store in the coldest part of the fridge, wrapped in its original packaging or in an airtight container.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+
+            <!-- Avocado Tip -->
+            <div class="tip-card glass-card rounded-2xl p-6" data-category="fruits">
+                <div class="text-4xl mb-4">🥑</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Avocado</h3>
+                <p class="text-gray-600 mb-4">
+                    Store unripe avocados at room temperature until ripe, then refrigerate. Cut avocado should be stored with pit and wrapped tightly.
+                </p>
+                <div class="flex items-center text-sm text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Shelf Life: 3-5 days
+                </div>
+            </div>
+        </div>
+
+        <!-- Seasonal Produce Guide -->
+        <div id="seasonal-guide" class="glass-card rounded-3xl p-8 mb-8 transform hover:scale-[1.02] transition-all duration-300">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
+                <span class="text-4xl mr-3">🌱</span>
+                Seasonal Produce Guide
+                <span class="ml-2 text-sm font-normal text-gray-500">(What's Fresh Now)</span>
+            </h2>
+            
+            <!-- Month selector -->
+            <div class="flex justify-center mb-8">
+                <div class="relative">
+                    <select id="month-selector" class="appearance-none px-6 py-3 rounded-full border-2 border-green-100 focus:border-green-500 bg-white pr-12 font-medium text-gray-700 focus:outline-none cursor-pointer hover:border-green-300 transition-all duration-300">
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seasonal produce display -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Fruits section -->
+                <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-50">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="text-3xl mr-3">🍎</span>
+                        <span>Seasonal Fruits</span>
+                    </h3>
+                    <ul id="seasonal-fruits" class="space-y-3 text-gray-600">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+
+                <!-- Vegetables section -->
+                <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-50">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="text-3xl mr-3">🥬</span>
+                        <span>Seasonal Vegetables</span>
+                    </h3>
+                    <ul id="seasonal-vegetables" class="space-y-3 text-gray-600">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="floating-card upper" data-aos="fade-left">
-      <h3>🍏 Pantry Tip: Apples</h3>
-      <p>Store apples in a cool, dry spot away from ripening fruits to keep them crisp longer.</p>
+
+    <!-- Chatbot UI -->
+    <div id="chatbot-container" class="fixed bottom-4 right-4 z-50">
+        <!-- Chat Button -->
+        <button id="chat-toggle" class="bg-[#5C8D5A] text-white rounded-full p-4 shadow-xl hover:bg-[#487148] transition-all duration-300 hover:scale-110 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            <span class="hidden md:inline">Storage Assistant</span>
+        </button>
+
+        <!-- Chat Window -->
+        <div id="chat-window" class="hidden fixed bottom-20 right-4 w-96 bg-white rounded-2xl shadow-2xl transform transition-all duration-300">
+            <!-- Chat Header -->
+            <div class="bg-[#5C8D5A] text-white p-4 rounded-t-2xl flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🌟</span>
+                    <h3 class="font-semibold text-lg">Storage Assistant</h3>
+                </div>
+                <button id="close-chat" class="text-white hover:text-gray-200 transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chat-messages" class="h-96 overflow-y-auto p-4 space-y-4">
+                <div class="bg-gray-100 rounded-2xl p-4 mr-auto max-w-[80%] shadow-sm">
+                    <p class="text-gray-700">👋 Hello! I'm your storage assistant. Ask me anything about storing food items!</p>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-4 border-t border-gray-100">
+                <form id="chat-form" class="flex gap-2">
+                    <input type="text" 
+                           id="chat-input" 
+                           placeholder="Ask about food storage..." 
+                           class="flex-1 px-4 py-3 border-2 border-gray-100 rounded-xl focus:outline-none focus:border-[#5C8D5A] transition-all duration-300">
+                    <button type="submit" 
+                            class="bg-[#5C8D5A] text-white px-6 py-3 rounded-xl hover:bg-[#487148] transition-all duration-300 flex items-center gap-2">
+                        <span>Send</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="floating-card lower" data-aos="fade-left">
-      <h3>🍊 Pantry Tip: Oranges</h3>
-      <p>Keep oranges in a well-ventilated area and avoid stacking them to maintain their juiciness.</p>
-    </div>
-    <!-- Scroll Indicator -->
-    <div class="scroll-indicator" id="scroll-indicator">
-      <span>▼</span>
-    </div>
-  </header>
-  <section id="info" class="container mx-auto px-8 py-16">
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-      <!-- Existing Tips -->
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥬 Spinach</h3>
-        <p>After washing, dry spinach thoroughly using a salad spinner or paper towels. Store in an airtight container lined with a dry paper towel in the fridge to prolong freshness.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍓 Strawberries</h3>
-        <p>Rinse strawberries only when ready to eat. Store them in a container lined with paper towels in the fridge to absorb moisture and prevent mold.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🧀 Cheddar Cheese</h3>
-        <p>Wrap cheddar cheese in parchment paper and then loosely in aluminum foil or a container to allow some airflow while keeping moisture out.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🌿 Basil</h3>
-        <p>Trim basil stems and place them in a glass with water, covering loosely with a plastic bag, or store at room temperature to maintain its fresh flavor.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍋 Lemons</h3>
-        <p>Store in a sealed bag in the fridge to retain juiciness and prevent drying out.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🧄 Garlic</h3>
-        <p>Keep in a dry, ventilated area away from sunlight to prevent sprouting.</p>
-      </div>
-  
-      <!-- New Tips Added -->
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥑 Avocados</h3>
-        <p>Store unripe avocados at room temperature. Once ripe, refrigerate to slow spoilage. To keep cut avocados fresh, store with the pit and cover tightly.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥕 Carrots</h3>
-        <p>Trim off greens and store carrots in a sealed container filled with water in the fridge to keep them crisp.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍞 Bread</h3>
-        <p>Keep in a breathable cloth bag at room temperature to prevent mold. For longer storage, freeze sliced bread in an airtight bag.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥚 Eggs</h3>
-        <p>Store in their original carton on a middle fridge shelf to maintain a stable temperature and prevent absorbing strong odors.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍠 Potatoes</h3>
-        <p>Store potatoes in a paper bag in a dark, cool, and well-ventilated place. Avoid refrigerating, as cold temperatures turn starches into sugar.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🧅 Onions</h3>
-        <p>Keep onions in a dark, cool place with good airflow. Do not store near potatoes, as they release gases that cause faster spoilage.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍯 Honey</h3>
-        <p>Store in a tightly sealed jar at room temperature. Honey never spoils but may crystallize—just warm gently to restore consistency.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🌰 Walnuts</h3>
-        <p>To keep walnuts fresh, store them in an airtight container in the fridge or freezer to prevent oils from turning rancid.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🫒 Olive Oil</h3>
-        <p>Store in a dark glass bottle in a cool, dark cabinet away from heat and sunlight to prevent oxidation and maintain flavor.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥫 Ketchup</h3>
-        <p>Once opened, keep ketchup refrigerated with the cap sealed tightly to preserve its flavor and prevent spoilage.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥜 Peanut Butter</h3>
-        <p>Natural peanut butter should be stored in the fridge to prevent separation, while commercial peanut butter can be kept at room temperature.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥤 Fresh Juice</h3>
-        <p>Store freshly squeezed juice in an airtight glass container in the fridge and consume within 2-3 days to retain vitamins and flavor.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>❄️ Frozen Vegetables</h3>
-        <p>Blanch vegetables before freezing to retain nutrients and color. Use freezer-safe bags or containers.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍚 Rice</h3>
-        <p>Store uncooked rice in an airtight container in a cool, dry place. Cooked rice should be refrigerated and consumed within 3-4 days.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍗 Chicken</h3>
-        <p>Raw chicken should be stored on the bottom shelf of the fridge in its original packaging or an airtight container. Use within 1-2 days or freeze for longer storage.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍣 Fish</h3>
-        <p>Keep fresh fish in the coldest part of the fridge, ideally on a bed of ice in a sealed container. Use within 1-2 days or freeze for later use.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥩 Beef</h3>
-        <p>Raw beef should be stored in the fridge for up to 3 days. If freezing, wrap tightly in freezer paper or vacuum-seal to prevent freezer burn.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🍼 Milk</h3>
-        <p>Store milk on a middle fridge shelf rather than the door to maintain a consistent temperature and avoid spoilage.</p>
-      </div>
-      <div class="info-card" data-aos="fade-up">
-        <h3>🥦 Broccoli</h3>
-        <p>Wrap broccoli loosely in a damp paper towel and store in the fridge. Avoid sealing in plastic bags, as it needs some air circulation.</p>
-      </div>
-    </div>
-  </section>
-  
-  <!-- AOS & Particles.js -->
-  <script>
-    AOS.init({ duration: 1000, once: true });
-    particlesJS("particles-js", {
-      "particles": {
-        "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-        "color": { "value": "#ffffff" },
-        "shape": { "type": "circle" },
-        "opacity": { "value": 0.5 },
-        "size": { "value": 3 },
-        "move": { "speed": 2 }
-      },
-      "interactivity": {
-        "events": {
-          "onhover": { "enable": true, "mode": "repulse" },
-          "onclick": { "enable": true, "mode": "push" }
-        }
-      }
-    });
-    // Smooth scroll to next section when scroll indicator is clicked
-    document.getElementById('scroll-indicator').addEventListener('click', () => {
-      document.getElementById('info').scrollIntoView({ behavior: 'smooth' });
-    });
-  // Array of fun facts with images
-  // Array of fun facts with images
-  const funFacts = [
-    { title: "🍏 Fun Fact: Apples", text: "Apples float in water because they are 25% air!", image: "/images/apples.jpg" },
-    { title: "🍌 Fun Fact: Bananas", text: "Bananas are berries, but strawberries aren’t!", image: "/images/bananas.jpg" },
-    { title: "🥕 Fun Fact: Carrots", text: "Carrots were originally purple, not orange!", image: "/images/carrots.jpg" },
-    { title: "🍫 Fun Fact: Chocolate", text: "White chocolate isn’t real chocolate—it has no cocoa solids!", image: "/images/chocolate.jpg" },
-    { title: "🍯 Fun Fact: Honey", text: "Honey never spoils! Edible honey has been found in Egyptian tombs.", image: "/images/honey.jpg" },
-    { title: "🌽 Fun Fact: Corn", text: "An ear of corn typically has 800 kernels arranged in 16 rows!", image: "/images/corn.jpg" },
-    { title: "🥚 Fun Fact: Eggs", text: "The color of an egg yolk depends on a hen’s diet.", image: "/images/eggs.jpg" },
-    { title: "🌶️ Fun Fact: Peppers", text: "The world’s spiciest pepper, the Carolina Reaper, is over 2 million Scoville units!", image: "/images/pepper.jpg" },
-    { title: "🥑 Fun Fact: Avocados", text: "Avocados have more potassium than bananas!", image: "/images/avocado.jpg" },
-    { title: "🍕 Fun Fact: Pizza", text: "The world's largest pizza was over 13,000 square feet!", image: "/images/pizza.jpg" },
-    { title: "🍌 Fun Fact: Banana Peels", text: "You can eat banana peels! They are rich in fiber and nutrients.", image: "/images/banana-peel.jpg" },
-    { title: "🧀 Fun Fact: Cheese", text: "There are over 2,000 varieties of cheese worldwide!", image: "/images/cheese.jpg" },
-    { title: "🥩 Fun Fact: Steak", text: "Japan’s Kobe beef comes from cows that are massaged daily!", image: "/images/steak.jpg" },
-    { title: "🥜 Fun Fact: Peanuts", text: "Peanuts aren’t nuts—they’re legumes, like beans!", image: "/images/peanuts.jpg" },
-    { title: "🍇 Fun Fact: Grapes", text: "Grapes explode when microwaved because of trapped moisture!", image: "/images/grapes.jpg" },
-    { title: "🥗 Fun Fact: Lettuce", text: "Lettuce was first cultivated by the Egyptians over 6,000 years ago!", image: "/images/lettuce.jpg" },
-    { title: "🍉 Fun Fact: Watermelon", text: "Watermelon is 92% water and was originally domesticated in Africa!", image: "/images/watermelon.jpg" },
-    { title: "🍣 Fun Fact: Sushi", text: "Sushi was originally a way to preserve fish in fermented rice!", image: "/images/sushi.jpg" },
-    { title: "🍞 Fun Fact: Bread", text: "The first recorded bread-making dates back over 14,000 years!", image: "/images/bread.jpg" },
-    { title: "🥛 Fun Fact: Milk", text: "A cow produces around 6 gallons of milk per day!", image: "/images/milk.jpg" }
-  ];
 
-  const FACT_CHANGE_INTERVAL = 10800000; // 3 hours in milliseconds
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Storage tips database
+            const storageTips = {
+                spinach: {
+                    instructions: "After washing, dry thoroughly using a salad spinner or paper towels. Store in an airtight container lined with a dry paper towel in the fridge.",
+                    shelfLife: "5-7 days",
+                    category: "vegetables"
+                },
+                strawberries: {
+                    instructions: "Rinse only when ready to eat. Store in a container lined with paper towels in the fridge to absorb moisture and prevent mold.",
+                    shelfLife: "3-5 days",
+                    category: "fruits"
+                },
+                "cheddar cheese": {
+                    instructions: "Wrap in parchment paper and then loosely in aluminum foil or a container to allow some airflow while keeping moisture out.",
+                    shelfLife: "3-4 weeks",
+                    category: "dairy"
+                },
+                basil: {
+                    instructions: "Trim stems and place in a glass with water, covering loosely with a plastic bag, or store at room temperature.",
+                    shelfLife: "1-2 weeks",
+                    category: "vegetables"
+                },
+                lemons: {
+                    instructions: "Store in a sealed bag in the fridge to retain juiciness and prevent drying out.",
+                    shelfLife: "2-3 weeks",
+                    category: "fruits"
+                },
+                garlic: {
+                    instructions: "Keep in a dry, ventilated area away from sunlight to prevent sprouting.",
+                    shelfLife: "3-5 months",
+                    category: "vegetables"
+                },
+                tomatoes: {
+                    instructions: "Store ripe tomatoes stem-side down at room temperature. Once ripe, refrigerate to slow down further ripening.",
+                    shelfLife: "5-7 days",
+                    category: "vegetables"
+                },
+                apples: {
+                    instructions: "Store in the refrigerator crisper drawer. Keep away from other fruits as they release ethylene gas.",
+                    shelfLife: "3-4 weeks",
+                    category: "fruits"
+                },
+                milk: {
+                    instructions: "Keep in the coldest part of the refrigerator, not in the door. Return to fridge immediately after use.",
+                    shelfLife: "5-7 days",
+                    category: "dairy"
+                },
+                chicken: {
+                    instructions: "Store in the coldest part of the fridge, wrapped in its original packaging or in an airtight container.",
+                    shelfLife: "1-2 days",
+                    category: "meat"
+                },
+                bananas: {
+                    instructions: "Store at room temperature until ripe, then refrigerate. Wrap stem ends in plastic to slow ripening.",
+                    shelfLife: "5-7 days",
+                    category: "fruits"
+                },
+                carrots: {
+                    instructions: "Remove green tops, store in a sealed bag in the crisper drawer. Keep away from ethylene-producing fruits.",
+                    shelfLife: "2-3 weeks",
+                    category: "vegetables"
+                },
+                yogurt: {
+                    instructions: "Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.",
+                    shelfLife: "1-2 weeks",
+                    category: "dairy"
+                },
+                "ground beef": {
+                    instructions: "Store in the coldest part of the fridge. Use within 1-2 days or freeze for longer storage.",
+                    shelfLife: "1-2 days",
+                    category: "meat"
+                },
+                oranges: {
+                    instructions: "Store at room temperature for up to a week, or in the refrigerator for longer storage.",
+                    shelfLife: "1-2 weeks",
+                    category: "fruits"
+                },
+                broccoli: {
+                    instructions: "Store unwashed in a perforated plastic bag in the crisper drawer. Keep away from ethylene-producing fruits.",
+                    shelfLife: "3-5 days",
+                    category: "vegetables"
+                },
+                grapes: {
+                    instructions: "Store unwashed in a perforated bag in the refrigerator. Wash only before eating.",
+                    shelfLife: "1-2 weeks",
+                    category: "fruits"
+                },
+                butter: {
+                    instructions: "Store in the refrigerator door or butter compartment. Can be kept at room temperature for 1-2 days.",
+                    shelfLife: "2-3 weeks",
+                    category: "dairy"
+                },
+                salmon: {
+                    instructions: "Store in the coldest part of the fridge, wrapped in plastic wrap or in an airtight container.",
+                    shelfLife: "1-2 days",
+                    category: "meat"
+                },
+                "bell peppers": {
+                    instructions: "Store unwashed in the crisper drawer. Keep away from ethylene-producing fruits.",
+                    shelfLife: "1-2 weeks",
+                    category: "vegetables"
+                },
+                pineapple: {
+                    instructions: "Store whole pineapple at room temperature until ripe, then refrigerate. Cut pineapple should be stored in an airtight container.",
+                    shelfLife: "3-5 days",
+                    category: "fruits"
+                },
+                "cottage cheese": {
+                    instructions: "Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.",
+                    shelfLife: "1-2 weeks",
+                    category: "dairy"
+                },
+                pork: {
+                    instructions: "Store in the coldest part of the fridge, wrapped in its original packaging or in an airtight container.",
+                    shelfLife: "3-5 days",
+                    category: "meat"
+                },
+                mango: {
+                    instructions: "Store unripe mangoes at room temperature until ripe, then refrigerate. Cut mango should be stored in an airtight container.",
+                    shelfLife: "4-7 days",
+                    category: "fruits"
+                },
+                cauliflower: {
+                    instructions: "Store unwashed in a perforated plastic bag in the crisper drawer. Keep away from ethylene-producing fruits.",
+                    shelfLife: "1-2 weeks",
+                    category: "vegetables"
+                },
+                kiwi: {
+                    instructions: "Store unripe kiwis at room temperature until ripe, then refrigerate. Keep away from other fruits.",
+                    shelfLife: "1-2 weeks",
+                    category: "fruits"
+                },
+                "sour cream": {
+                    instructions: "Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.",
+                    shelfLife: "2-3 weeks",
+                    category: "dairy"
+                },
+                tuna: {
+                    instructions: "Store fresh tuna in the coldest part of the fridge, wrapped in plastic wrap or in an airtight container.",
+                    shelfLife: "1-2 days",
+                    category: "meat"
+                },
+                asparagus: {
+                    instructions: "Trim ends and store upright in a glass of water in the refrigerator, or wrap in a damp paper towel.",
+                    shelfLife: "3-5 days",
+                    category: "vegetables"
+                },
+                pears: {
+                    instructions: "Store unripe pears at room temperature until ripe, then refrigerate. Keep away from other fruits.",
+                    shelfLife: "3-5 days",
+                    category: "fruits"
+                },
+                "cream cheese": {
+                    instructions: "Keep in the refrigerator at all times. Store in its original container and keep the lid tightly sealed.",
+                    shelfLife: "2-3 weeks",
+                    category: "dairy"
+                },
+                lamb: {
+                    instructions: "Store in the coldest part of the fridge, wrapped in its original packaging or in an airtight container.",
+                    shelfLife: "3-5 days",
+                    category: "meat"
+                },
+                avocado: {
+                    instructions: "Store unripe avocados at room temperature until ripe, then refrigerate. Cut avocado should be stored with pit and wrapped tightly.",
+                    shelfLife: "3-5 days",
+                    category: "fruits"
+                }
+            };
 
-  function getStoredFactIndex() {
-    let lastFactIndex = localStorage.getItem("funFactIndex");
-    let lastUpdated = localStorage.getItem("funFactTimestamp");
-    let currentTime = new Date().getTime();
+            // General storage tips
+            const generalTips = {
+                fruits: "Most fruits should be stored in the refrigerator once ripe. Keep ethylene-producing fruits separate from other produce.",
+                vegetables: "Most vegetables should be stored in the crisper drawer. Don't wash until ready to use.",
+                dairy: "Always store dairy products in the coldest part of your refrigerator, not in the door.",
+                meat: "Store meat in the coldest part of your fridge and use within recommended timeframes or freeze.",
+                temperature: "The ideal refrigerator temperature is between 35°F and 38°F (1.7°C to 3.3°C).",
+                containers: "Use airtight containers to prevent moisture loss and cross-contamination."
+            };
 
-    if (!lastUpdated || currentTime - lastUpdated > FACT_CHANGE_INTERVAL) {
-      let newFactIndex = Math.floor(Math.random() * funFacts.length);
-      localStorage.setItem("funFactIndex", newFactIndex);
-      localStorage.setItem("funFactTimestamp", currentTime);
-      return newFactIndex;
-    } else {
-      return parseInt(lastFactIndex);
-    }
-  }
+            const chatToggle = document.getElementById('chat-toggle');
+            const chatWindow = document.getElementById('chat-window');
+            const closeChat = document.getElementById('close-chat');
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
 
-  function updateFloatingCards() {
-    let factIndex = getStoredFactIndex();
+            // Toggle chat window
+            chatToggle.addEventListener('click', () => {
+                chatWindow.classList.toggle('hidden');
+            });
 
-    // Get floating card elements
-    const upperCard = document.querySelector(".floating-card.upper");
-    const lowerCard = document.querySelector(".floating-card.lower");
+            // Close chat window
+            closeChat.addEventListener('click', () => {
+                chatWindow.classList.add('hidden');
+            });
 
-    // Update text only (KEEPING original images)
-    upperCard.querySelector("h3").textContent = funFacts[factIndex].title;
-    upperCard.querySelector("p").textContent = funFacts[factIndex].text;
+            // Handle form submission
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (message) {
+                    addMessage(message, 'user');
+                    chatInput.value = '';
+                    const response = processMessage(message);
+                    addMessage(response, 'bot');
+                }
+            });
 
-    // Ensure the lower card gets a different fact
-    let nextFactIndex = (factIndex + 1) % funFacts.length;
-    lowerCard.querySelector("h3").textContent = funFacts[nextFactIndex].title;
-    lowerCard.querySelector("p").textContent = funFacts[nextFactIndex].text;
-  }
+            function addMessage(message, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `${sender === 'user' ? 'bg-[#5C8D5A] text-white ml-auto' : 'bg-gray-100 text-gray-700 mr-auto'} rounded-2xl p-4 max-w-[80%] shadow-sm transform transition-all duration-300 hover:scale-[1.02]`;
+                messageDiv.textContent = message;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
 
-  // Initial display
-  updateFloatingCards();
+            function processMessage(message) {
+                const lowerMessage = message.toLowerCase();
+                
+                // Check for general category questions
+                if (lowerMessage.includes('temperature')) {
+                    return generalTips.temperature;
+                }
+                if (lowerMessage.includes('container')) {
+                    return generalTips.containers;
+                }
 
-  // Change fun facts every 3 hours
-  setInterval(updateFloatingCards, FACT_CHANGE_INTERVAL);
+                // Check for category-specific questions
+                for (const category of ['fruits', 'vegetables', 'dairy', 'meat']) {
+                    if (lowerMessage.includes(category)) {
+                        return generalTips[category];
+                    }
+                }
 
-  </script>
+                // Check for specific food items
+                for (const [food, info] of Object.entries(storageTips)) {
+                    if (lowerMessage.includes(food)) {
+                        if (lowerMessage.includes('shelf life') || lowerMessage.includes('how long')) {
+                            return `${food.charAt(0).toUpperCase() + food.slice(1)} can be stored for ${info.shelfLife}.`;
+                        }
+                        return `Here's how to store ${food}: ${info.instructions} The shelf life is ${info.shelfLife}.`;
+                    }
+                }
+
+                // If no specific match is found
+                return "I can help you with storage tips for various foods! You can ask about specific items like 'How do I store avocados?' or general categories like 'How should I store fruits?' or 'What's the best temperature for food storage?'";
+            }
+
+            // Seasonal produce database
+            const seasonalProduce = {
+                fruits: {
+                    0: ["Oranges", "Grapefruit", "Lemons", "Limes", "Pomegranate", "Pears"], // January
+                    1: ["Oranges", "Grapefruit", "Lemons", "Limes"], // February
+                    2: ["Oranges", "Grapefruit", "Lemons", "Limes"], // March
+                    3: ["Oranges", "Lemons", "Limes", "Strawberries"], // April
+                    4: ["Strawberries", "Cherries", "Apricots", "Limes"], // May
+                    5: ["Strawberries", "Cherries", "Peaches", "Nectarines", "Apricots", "Watermelon"], // June
+                    6: ["Strawberries", "Cherries", "Peaches", "Nectarines", "Plums", "Watermelon", "Cantaloupe", "Blueberries", "Raspberries"], // July
+                    7: ["Peaches", "Nectarines", "Plums", "Watermelon", "Cantaloupe", "Blueberries", "Raspberries", "Apples", "Figs"], // August
+                    8: ["Apples", "Pears", "Grapes", "Figs", "Pomegranate"], // September
+                    9: ["Apples", "Pears", "Grapes", "Pomegranate"], // October
+                    10: ["Apples", "Pears", "Pomegranate", "Cranberries"], // November
+                    11: ["Oranges", "Grapefruit", "Pomegranate", "Pears"] // December
+                },
+                vegetables: {
+                    0: ["Kale", "Brussels Sprouts", "Cabbage", "Carrots", "Leeks", "Parsnips"], // January
+                    1: ["Kale", "Brussels Sprouts", "Cabbage", "Carrots", "Leeks", "Parsnips"], // February
+                    2: ["Kale", "Brussels Sprouts", "Carrots", "Leeks", "Spring Onions", "Spinach"], // March
+                    3: ["Asparagus", "Spring Onions", "Spinach", "Lettuce", "Peas"], // April
+                    4: ["Asparagus", "Spring Onions", "Spinach", "Lettuce", "Peas", "Radishes"], // May
+                    5: ["Asparagus", "Cucumber", "Spinach", "Lettuce", "Peas", "Radishes", "Tomatoes", "Bell Peppers"], // June
+                    6: ["Cucumber", "Tomatoes", "Bell Peppers", "Corn", "Green Beans", "Eggplant", "Zucchini"], // July
+                    7: ["Cucumber", "Tomatoes", "Bell Peppers", "Corn", "Green Beans", "Eggplant", "Zucchini"], // August
+                    8: ["Tomatoes", "Bell Peppers", "Corn", "Eggplant", "Zucchini", "Pumpkin", "Sweet Potatoes"], // September
+                    9: ["Pumpkin", "Sweet Potatoes", "Brussels Sprouts", "Cauliflower", "Broccoli"], // October
+                    10: ["Pumpkin", "Sweet Potatoes", "Brussels Sprouts", "Cauliflower", "Broccoli", "Kale"], // November
+                    11: ["Kale", "Brussels Sprouts", "Cabbage", "Carrots", "Leeks", "Parsnips"] // December
+                }
+            };
+
+            // Function to update seasonal produce display
+            function updateSeasonalProduce(month) {
+                const fruitsList = document.getElementById('seasonal-fruits');
+                const vegetablesList = document.getElementById('seasonal-vegetables');
+
+                // Clear existing lists
+                fruitsList.innerHTML = '';
+                vegetablesList.innerHTML = '';
+
+                // Add fruits
+                seasonalProduce.fruits[month].forEach(fruit => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center seasonal-item';
+                    li.innerHTML = `
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                        <span class="hover:text-green-600 transition-colors duration-300">${fruit}</span>
+                    `;
+                    fruitsList.appendChild(li);
+                });
+
+                // Add vegetables
+                seasonalProduce.vegetables[month].forEach(vegetable => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center seasonal-item';
+                    li.innerHTML = `
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                        <span class="hover:text-green-600 transition-colors duration-300">${vegetable}</span>
+                    `;
+                    vegetablesList.appendChild(li);
+                });
+            }
+
+            // Set current month and update display
+            const monthSelector = document.getElementById('month-selector');
+            const currentMonth = new Date().getMonth();
+            monthSelector.value = currentMonth;
+            updateSeasonalProduce(currentMonth);
+
+            // Add event listener for month selection
+            monthSelector.addEventListener('change', (e) => {
+                updateSeasonalProduce(parseInt(e.target.value));
+            });
+
+            // Add smooth scroll functionality for seasonal button
+            const seasonalButton = document.getElementById('seasonal-button');
+            const seasonalGuide = document.getElementById('seasonal-guide');
+
+            seasonalButton.addEventListener('click', () => {
+                seasonalGuide.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Check authentication
+            if (!checkAuth()) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const tipCards = document.querySelectorAll('.tip-card');
+
+            // Function to calculate similarity between two strings
+            function similarity(s1, s2) {
+                let longer = s1;
+                let shorter = s2;
+                if (s1.length < s2.length) {
+                    longer = s2;
+                    shorter = s1;
+                }
+                const longerLength = longer.length;
+                if (longerLength === 0) {
+                    return 1.0;
+                }
+                const editDistance = levenshteinDistance(longer, shorter);
+                return (longerLength - editDistance) / parseFloat(longerLength);
+            }
+
+            // Function to calculate Levenshtein distance
+            function levenshteinDistance(s1, s2) {
+                s1 = s1.toLowerCase();
+                s2 = s2.toLowerCase();
+
+                const costs = new Array();
+                for (let i = 0; i <= s1.length; i++) {
+                    let lastValue = i;
+                    for (let j = 0; j <= s2.length; j++) {
+                        if (i === 0) {
+                            costs[j] = j;
+                        } else {
+                            if (j > 0) {
+                                let newValue = costs[j - 1];
+                                if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+                                    newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                                }
+                                costs[j - 1] = lastValue;
+                                lastValue = newValue;
+                            }
+                        }
+                    }
+                    if (i > 0) {
+                        costs[s2.length] = lastValue;
+                    }
+                }
+                return costs[s2.length];
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (searchTerm.length === 0) {
+                    tipCards.forEach(card => card.style.display = 'block');
+                    return;
+                }
+
+                tipCards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    const content = card.querySelector('p').textContent.toLowerCase();
+                    const words = searchTerm.split(' ');
+
+                    // Check each word in the search term
+                    const matches = words.some(word => {
+                        if (word.length < 2) return false; // Skip very short words
+                        
+                        // Check title similarity
+                        const titleWords = title.split(' ');
+                        const titleMatch = titleWords.some(titleWord => similarity(titleWord, word) > 0.7);
+                        
+                        // Check content for exact matches or similar words
+                        const contentWords = content.split(' ');
+                        const contentMatch = contentWords.some(contentWord => similarity(contentWord, word) > 0.7);
+
+                        return titleMatch || contentMatch || 
+                               title.includes(word) || 
+                               content.includes(word);
+                    });
+
+                    card.style.display = matches ? 'block' : 'none';
+                });
+            });
+
+            // Category filter functionality
+            const categoryButtons = document.querySelectorAll('.category-badge');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active state from all buttons
+                    categoryButtons.forEach(btn => btn.classList.remove('bg-green-500', 'text-white'));
+                    // Add active state to clicked button
+                    button.classList.add('bg-green-500', 'text-white');
+                    
+                    const selectedCategory = button.textContent.toLowerCase();
+                    tipCards.forEach(card => {
+                        const cardCategory = card.getAttribute('data-category');
+                        if (selectedCategory === 'all' || cardCategory === selectedCategory) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>
