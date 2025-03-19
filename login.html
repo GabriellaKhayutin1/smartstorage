@@ -25,14 +25,48 @@
         </div>
 
         <h2 class="text-3xl font-bold text-center text-gray-900">Welcome Back</h2>
-        <p class="text-md text-gray-500 text-center mb-6">Sign in using Google</p>
+        
+        <!-- ✅ Email/Password Login Form -->
+        <form id="login-form" class="mt-6 space-y-4">
+            <div>
+                <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="login-email" name="email" required
+                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+            </div>
+            <div>
+                <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="login-password" name="password" required
+                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+            </div>
+            <button type="submit" id="login-btn"
+                class="w-full flex items-center justify-center gap-2 bg-green-600 py-4 text-white text-lg rounded-xl transition-all hover:bg-green-700 active:scale-95 shadow-md font-semibold">
+                Sign in with Email
+            </button>
+        </form>
+
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+        </div>
 
         <!-- ✅ Google Login Button -->
         <button id="google-login-btn"
-            class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-4 mt-4 text-gray-700 text-lg rounded-xl transition-all hover:bg-gray-100 active:scale-95 shadow-md font-semibold">
+            class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-4 text-gray-700 text-lg rounded-xl transition-all hover:bg-gray-100 active:scale-95 shadow-md font-semibold">
             <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6">
             Sign in with Google
         </button>
+
+        <!-- ✅ Register Link -->
+        <p class="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?
+            <a href="/register.html" class="font-medium text-green-600 hover:text-green-500">
+                Register here
+            </a>
+        </p>
     </div>
 
     <script>

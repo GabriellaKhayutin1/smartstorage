@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 
 import authRoutes from "./routes/authRoutes.js";
 import leaderboardRoutes from "./routes/leaderboard.js";
+import profileRoutes from "./routes/profileRoutes.js";
 import authenticate from "./middleware/authMiddleware.js";
 import Ingredient from "./models/Ingredient.js";
 import User from "./models/User.js";
@@ -39,6 +40,9 @@ app.options("*", (req, res) => {
 app.use(express.json());
 app.use(cookieParser());
 
+// ✅ Serve static files from the public directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
+
 // ✅ Session Middleware
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -50,6 +54,7 @@ app.use(session({
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/profile", profileRoutes);
 
 // ✅ Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -169,4 +174,7 @@ app.get("/refresh_token", authenticate, async (req, res) => {
 
 // ✅ Server Setup
 const PORT = process.env.PORT || 5003;
-app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`✅ Upload directory: ${path.join(process.cwd(), 'public/uploads/profile-pictures')}`);
+});
