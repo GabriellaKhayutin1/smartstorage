@@ -43,85 +43,117 @@ function calculateProgress(points) {
 
 // Update the UI with level information
 function updateLevelUI(points) {
-    const currentLevelIndex = getCurrentLevel(points);
-    const currentLevel = LEVELS[currentLevelIndex];
-    const progress = calculateProgress(points);
+    try {
+        const currentLevelIndex = getCurrentLevel(points);
+        const currentLevel = LEVELS[currentLevelIndex];
+        const progress = calculateProgress(points);
 
-    // Update current level title and number
-    document.getElementById('current-level-title').textContent = currentLevel.title;
-    document.getElementById('level-number').textContent = `Level ${currentLevelIndex + 1}`;
+        // Update current level title and number
+        const currentLevelTitle = document.getElementById('current-level-title');
+        const levelNumber = document.getElementById('level-number');
+        const nextLevelTitle = document.getElementById('next-level-title');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const progressBar = document.getElementById('progress-bar');
 
-    // Update next level information if not at max level
-    if (currentLevelIndex < LEVELS.length - 1) {
-        const nextLevel = LEVELS[currentLevelIndex + 1];
-        document.getElementById('next-level-title').textContent = nextLevel.title;
-    } else {
-        document.getElementById('next-level-title').textContent = "Max Level Reached!";
-    }
+        if (currentLevelTitle) currentLevelTitle.textContent = currentLevel.title;
+        if (levelNumber) levelNumber.textContent = `Level ${currentLevelIndex + 1}`;
 
-    // Update progress bar
-    document.getElementById('progress-percentage').textContent = `${progress}%`;
-    document.getElementById('progress-bar').style.width = `${progress}%`;
-
-    // Update level milestones to show current level
-    const milestones = document.querySelectorAll('.level-milestone');
-    milestones.forEach((milestone, index) => {
-        if (index <= currentLevelIndex) {
-            milestone.classList.add('text-green-600');
-            milestone.classList.remove('text-gray-700');
-        } else {
-            milestone.classList.remove('text-green-600');
-            milestone.classList.add('text-gray-700');
+        // Update next level information if not at max level
+        if (nextLevelTitle) {
+            if (currentLevelIndex < LEVELS.length - 1) {
+                const nextLevel = LEVELS[currentLevelIndex + 1];
+                nextLevelTitle.textContent = nextLevel.title;
+            } else {
+                nextLevelTitle.textContent = "Max Level Reached!";
+            }
         }
-    });
+
+        // Update progress bar
+        if (progressPercentage) progressPercentage.textContent = `${progress}%`;
+        if (progressBar) progressBar.style.width = `${progress}%`;
+
+        // Update level milestones to show current level
+        const milestones = document.querySelectorAll('.level-milestone');
+        milestones.forEach((milestone, index) => {
+            if (index <= currentLevelIndex) {
+                milestone.classList.add('text-green-600');
+                milestone.classList.remove('text-gray-700');
+            } else {
+                milestone.classList.remove('text-green-600');
+                milestone.classList.add('text-gray-700');
+            }
+        });
+    } catch (error) {
+        console.error('Error updating level UI:', error);
+    }
 }
 
 // Initialize leveling system
 function initializeLevelSystem() {
-    // Get stats from the page
-    const co2Saved = parseFloat(document.getElementById('total-saved').textContent) || 0;
-    const itemsManaged = parseInt(document.getElementById('items-managed').textContent) || 0;
-    const wastePrevented = parseFloat(document.getElementById('waste-prevented').textContent) || 0;
+    try {
+        // Get stats from the page
+        const totalSaved = document.getElementById('total-saved');
+        const itemsManaged = document.getElementById('items-managed');
+        const wastePrevented = document.getElementById('waste-prevented');
 
-    // Calculate total points
-    const points = calculatePoints(co2Saved, itemsManaged, wastePrevented);
+        if (!totalSaved || !itemsManaged || !wastePrevented) {
+            console.log('Stats elements not found, waiting for them to load...');
+            return;
+        }
 
-    // Update UI
-    updateLevelUI(points);
+        const co2Saved = parseFloat(totalSaved.textContent) || 0;
+        const itemsManagedCount = parseInt(itemsManaged.textContent) || 0;
+        const wastePreventedAmount = parseFloat(wastePrevented.textContent) || 0;
+
+        // Calculate total points
+        const points = calculatePoints(co2Saved, itemsManagedCount, wastePreventedAmount);
+
+        // Update UI
+        updateLevelUI(points);
+    } catch (error) {
+        console.error('Error initializing level system:', error);
+    }
 }
 
 // Create a MutationObserver to watch for changes in the stats
 function observeStatsChanges() {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'characterData' || mutation.type === 'childList') {
-                initializeLevelSystem();
+    try {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                    initializeLevelSystem();
+                }
+            });
+        });
+
+        // Observe changes in the stats elements
+        const statsElements = [
+            document.getElementById('total-saved'),
+            document.getElementById('items-managed'),
+            document.getElementById('waste-prevented')
+        ];
+
+        statsElements.forEach(element => {
+            if (element) {
+                observer.observe(element, {
+                    characterData: true,
+                    childList: true,
+                    subtree: true
+                });
             }
         });
-    });
-
-    // Observe changes in the stats elements
-    const statsElements = [
-        document.getElementById('total-saved'),
-        document.getElementById('items-managed'),
-        document.getElementById('waste-prevented')
-    ];
-
-    statsElements.forEach(element => {
-        if (element) {
-            observer.observe(element, {
-                characterData: true,
-                childList: true,
-                subtree: true
-            });
-        }
-    });
+    } catch (error) {
+        console.error('Error setting up stats observer:', error);
+    }
 }
 
-// Listen for DOM content loaded to initialize
+// Wait for DOM content to be loaded
 document.addEventListener('DOMContentLoaded', () => {
-    initializeLevelSystem();
-    observeStatsChanges();
+    // Add a small delay to ensure all elements are loaded
+    setTimeout(() => {
+        initializeLevelSystem();
+        observeStatsChanges();
+    }, 100);
 });
 
 // Export functions for use in other files
