@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStorage - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .app-title {
+            color: #4CAF50;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        .google-btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .google-btn:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+        .divider span {
+            padding: 0 10px;
+        }
+        .app-description {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="app-title">SmartStorage</h1>
+        <p class="welcome-text">Welcome back! Sign in to manage your food inventory.</p>
+        
+        <button class="google-btn" onclick="loginWithGoogle()">
+            <img src="https://www.google.com/favicon.ico" alt="Google" class="google-icon">
+            Sign in with Google
+        </button>
+
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <p class="app-description">
+            SmartStorage helps you track your food inventory, reduce waste, and save money.
+            Sign in with your Google account to get started.
+        </p>
+    </div>
+
+    <script>
+        function loginWithGoogle() {
+            window.location.href = 'http://localhost:5003/auth/google';
+        }
+
+        // Check if there's a token in the URL (after Google OAuth callback)
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (token) {
+                // Store the token
+                localStorage.setItem('token', token);
+                
+                // Redirect to home page
+                window.location.href = 'index.html';
+            }
+        };
+    </script>
+</body>
+</html>
