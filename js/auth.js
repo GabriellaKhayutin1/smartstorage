@@ -94,3 +94,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// ✅ Handle logout
+function logout() {
+    // Clear authentication data
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+    
+    // Redirect to login page
+    window.location.href = "/login.html";
+}

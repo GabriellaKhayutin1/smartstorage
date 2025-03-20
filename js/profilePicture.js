@@ -10,10 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Load saved profile picture if exists
-    const savedProfilePicture = localStorage.getItem('profilePicture');
-    if (savedProfilePicture) {
-        profilePicture.src = savedProfilePicture;
+    // Get user ID from token
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (!token) {
+        console.error('No authentication token found');
+        return;
+    }
+
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userId = payload.userId;
+
+        // Load user's profile picture
+        loadUserProfilePicture(userId);
+    } catch (error) {
+        console.error('Error parsing token:', error);
     }
 
     // Add change event listener
@@ -34,15 +45,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // Get user ID from token
+            const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload.userId;
+
             // Create FormData
             const formData = new FormData();
             formData.append('profilePicture', file);
 
-            // Send to backend
-            const response = await fetch('http://localhost:5003/api/upload-profile-picture', {
+            // Send to backend with authentication
+            const response = await fetch('http://localhost:5003/api/profile/upload-picture', {
                 method: 'POST',
-                body: formData,
-                credentials: 'include' // Include cookies for authentication
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
             });
 
             if (!response.ok) {
@@ -52,10 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             // Update profile picture display
-            profilePicture.src = data.imageUrl;
+            profilePicture.src = `http://localhost:5003${data.profilePicture}`;
             
-            // Save to localStorage for persistence
-            localStorage.setItem('profilePicture', data.imageUrl);
+            // Save to localStorage with user-specific key
+            localStorage.setItem(`profilePicture_${userId}`, `http://localhost:5003${data.profilePicture}`);
 
             // Show success message
             showNotification('Profile picture updated successfully!', 'success');
@@ -65,6 +83,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Function to load user's profile picture
+async function loadUserProfilePicture(userId) {
+    try {
+        // Try to get from localStorage first
+        const savedProfilePicture = localStorage.getItem(`profilePicture_${userId}`);
+        if (savedProfilePicture) {
+            document.getElementById('profile-picture').src = savedProfilePicture;
+            return;
+        }
+
+        // If not in localStorage, fetch from backend
+        const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+        const response = await fetch('http://localhost:5003/api/profile', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.profilePicture) {
+                const profilePictureUrl = `http://localhost:5003${data.profilePicture}`;
+                document.getElementById('profile-picture').src = profilePictureUrl;
+                localStorage.setItem(`profilePicture_${userId}`, profilePictureUrl);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading profile picture:', error);
+    }
+}
 
 function showNotification(message, type) {
     try {
