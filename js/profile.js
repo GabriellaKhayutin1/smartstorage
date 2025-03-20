@@ -257,68 +257,115 @@ function updateLeaderboard(leaderboard) {
 }
 
 // Profile picture upload functionality
-document.addEventListener('DOMContentLoaded', () => {
+function initializeProfilePictureUpload() {
     const profilePictureInput = document.getElementById('profile-picture-input');
     const profilePicture = document.getElementById('profile-picture');
-    const profilePicturePlaceholder = document.getElementById('profile-picture-placeholder');
 
-    if (profilePictureInput) {
-        profilePictureInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
-                return;
-            }
-
-            // Validate file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size should be less than 5MB');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('profilePicture', file);
-
-            try {
-                const token = localStorage.getItem("token") || localStorage.getItem("authToken");
-                if (!token) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE_URL}/api/profile/upload-picture`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to upload profile picture');
-                }
-                
-                // Update the profile picture display
-                profilePicture.src = `${API_BASE_URL}${data.profilePicture}`;
-                profilePicture.classList.remove('hidden');
-                profilePicturePlaceholder.classList.add('hidden');
-
-                // Show success message
-                alert('Profile picture updated successfully!');
-            } catch (error) {
-                console.error('Error uploading profile picture:', error);
-                alert(error.message || 'Failed to upload profile picture. Please try again.');
-            }
-        });
+    if (!profilePictureInput || !profilePicture) {
+        console.log('Profile picture elements not found');
+        return;
     }
 
-    // Load user profile data including profile picture
-    loadUserProfile();
+    profilePictureInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showNotification('Please select an image file', 'error');
+            return;
+        }
+
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('File size should be less than 5MB', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('profilePicture', file);
+
+        try {
+            const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/profile/upload-picture`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to upload profile picture');
+            }
+
+            const data = await response.json();
+            
+            // Update the profile picture display
+            profilePicture.src = `${API_BASE_URL}${data.profilePicture}`;
+            
+            // Save to localStorage for persistence
+            localStorage.setItem('profilePicture', `${API_BASE_URL}${data.profilePicture}`);
+
+            // Show success message
+            showNotification('Profile picture updated successfully!', 'success');
+        } catch (error) {
+            console.error('Error uploading profile picture:', error);
+            showNotification(error.message || 'Failed to upload profile picture. Please try again.', 'error');
+        }
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    } text-white z-50 transition-all duration-300 transform translate-y-0 opacity-100`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    requestAnimationFrame(() => {
+        notification.style.transform = 'translateY(0)';
+        notification.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+        notification.style.transform = 'translateY(-100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        // Initialize profile picture upload
+        initializeProfilePictureUpload();
+
+        // Load saved profile picture if exists
+        const profilePicture = document.getElementById('profile-picture');
+        const savedProfilePicture = localStorage.getItem('profilePicture');
+        if (profilePicture && savedProfilePicture) {
+            profilePicture.src = savedProfilePicture;
+        }
+
+        // Add a small delay to ensure all elements are loaded
+        setTimeout(() => {
+            loadUserProfile();
+        }, 100);
+    } catch (error) {
+        console.error('Error initializing profile:', error);
+        showNotification('Error initializing profile. Please refresh the page.', 'error');
+    }
 });
 
 async function loadUserProfile() {
@@ -329,36 +376,133 @@ async function loadUserProfile() {
             return;
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/profile`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch user profile');
+        // Get user data from token
+        let userData;
+        try {
+            userData = JSON.parse(atob(token.split('.')[1]));
+            console.log('User data from token:', userData);
+        } catch (error) {
+            console.error('Error parsing token:', error);
+            localStorage.removeItem("token");
+            localStorage.removeItem("authToken");
+            window.location.href = '/login.html';
+            return;
         }
 
-        const userData = await response.json();
-        
-        // Update profile picture if available
-        const profilePicture = document.getElementById('profile-picture');
-        const profilePicturePlaceholder = document.getElementById('profile-picture-placeholder');
-        
-        if (userData.profilePicture) {
-            profilePicture.src = `${API_BASE_URL}${userData.profilePicture}`;
-            profilePicture.classList.remove('hidden');
-            profilePicturePlaceholder.classList.add('hidden');
-        }
-
-        // Update other user information
+        // Update user info
         const userNameElement = document.getElementById('user-name');
         const userEmailElement = document.getElementById('user-email');
+        if (!userNameElement || !userEmailElement) {
+            throw new Error('Missing user info DOM elements');
+        }
         
-        if (userNameElement) userNameElement.textContent = userData.name || extractName(userData.email);
-        if (userEmailElement) userEmailElement.textContent = userData.email || 'No email provided';
+        userNameElement.textContent = userData.name || extractName(userData.email);
+        userEmailElement.textContent = userData.email || 'No email provided';
+
+        // Fetch user's ingredients
+        console.log('Fetching ingredients with token:', token);
+        console.log('API URL:', `${API_BASE_URL}/api/ingredients`);
+        
+        try {
+            const ingredientsResponse = await fetch(`${API_BASE_URL}/api/ingredients`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Ingredients response status:', ingredientsResponse.status);
+            console.log('Ingredients response headers:', Object.fromEntries(ingredientsResponse.headers.entries()));
+            
+            if (!ingredientsResponse.ok) {
+                if (ingredientsResponse.status === 401) {
+                    console.log('Token is invalid or expired');
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("authToken");
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const errorText = await ingredientsResponse.text();
+                console.error('Error response:', errorText);
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || `Failed to fetch ingredients: ${ingredientsResponse.status}`);
+                } catch (e) {
+                    throw new Error(`Failed to fetch ingredients: ${ingredientsResponse.status}`);
+                }
+            }
+
+            const ingredients = await ingredientsResponse.json();
+            console.log('User ingredients:', ingredients);
+
+            // Calculate and update stats
+            const co2Saved = calculateCO2Savings(ingredients);
+
+            const totalSavedElement = document.getElementById('total-saved');
+            const itemsManagedElement = document.getElementById('items-managed');
+            const wastePreventedElement = document.getElementById('waste-prevented');
+
+            if (!totalSavedElement || !itemsManagedElement || !wastePreventedElement) {
+                throw new Error('Missing stats DOM elements');
+            }
+
+            totalSavedElement.textContent = co2Saved.toFixed(1);
+            itemsManagedElement.textContent = ingredients.length;
+            wastePreventedElement.textContent = (co2Saved * 0.5).toFixed(1);
+
+            // Load leaderboard data
+            console.log('Fetching leaderboard data...');
+            const leaderboardResponse = await fetch(`${API_BASE_URL}/api/leaderboard/waste-reduction`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Leaderboard response status:', leaderboardResponse.status);
+            
+            if (!leaderboardResponse.ok) {
+                const errorText = await leaderboardResponse.text();
+                console.error('Leaderboard error response:', errorText);
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || `Failed to fetch leaderboard: ${leaderboardResponse.status}`);
+                } catch (e) {
+                    throw new Error(`Failed to fetch leaderboard: ${leaderboardResponse.status}`);
+                }
+            }
+
+            const leaderboard = await leaderboardResponse.json();
+            console.log('Leaderboard data:', leaderboard);
+
+            // Update the UI with the leaderboard data
+            updateLeaderboardUI(leaderboard);
+
+        } catch (fetchError) {
+            console.error('Fetch error:', fetchError);
+            throw fetchError;
+        }
 
     } catch (error) {
         console.error('Error loading user profile:', error);
+        // Update UI to show error state
+        const userNameElement = document.getElementById('user-name');
+        const userEmailElement = document.getElementById('user-email');
+        if (userNameElement && userEmailElement) {
+            userNameElement.textContent = 'Error loading data';
+            userEmailElement.textContent = error.message || 'Please try again later';
+        }
+
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        if (leaderboardBody) {
+            leaderboardBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="p-4 text-red-500 text-center">
+                        ⚠️ ${error.message || 'Error loading data'}
+                    </td>
+                </tr>`;
+        }
     }
 } 

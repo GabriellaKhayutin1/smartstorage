@@ -4,78 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Smart Storage</title>
     <script defer src="/js/auth.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
 
-<body class="relative flex items-center justify-center min-h-screen bg-gray-900">
+<body class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
 
-    <!-- ✅ Background Image -->
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/images/pexels-goumbik-616401.jpg');">
-        <div class="absolute inset-0 bg-black bg-opacity-50"></div> <!-- Dark Overlay -->
+    <!-- ✅ Background Image with Overlay -->
+    <div class="absolute inset-0 bg-cover bg-center bg-fixed" style="background-image: url('/images/pexels-goumbik-616401.jpg');">
+        <div class="absolute inset-0 bg-gradient-to-br from-black/70 to-black/50"></div>
     </div>
 
     <!-- ✅ Login Card -->
-    <div class="relative z-10 w-full max-w-md p-8 bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-2xl border border-gray-300">
+    <div class="relative z-10 w-full max-w-md mx-4 p-8 glass-effect rounded-2xl shadow-2xl hover-scale">
         
-        <!-- ✅ Logo -->
-        <div class="flex justify-center mb-6">
-            <img src="/images/logo.png" alt="Smart Storage Logo" class="w-24 h-24">
+        <!-- ✅ Logo with Animation -->
+        <div class="flex justify-center mb-8 transform hover:scale-105 transition-transform duration-300">
+            <img src="/images/logo.png" alt="Smart Storage Logo" class="w-28 h-28 drop-shadow-lg">
         </div>
 
-        <h2 class="text-3xl font-bold text-center text-gray-900">Welcome Back</h2>
-        
-        <!-- ✅ Email/Password Login Form -->
-        <form id="login-form" class="mt-6 space-y-4">
-            <div>
-                <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" id="login-email" name="email" required
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
-            </div>
-            <div>
-                <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" id="login-password" name="password" required
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
-            </div>
-            <button type="submit" id="login-btn"
-                class="w-full flex items-center justify-center gap-2 bg-green-600 py-4 text-white text-lg rounded-xl transition-all hover:bg-green-700 active:scale-95 shadow-md font-semibold">
-                Sign in with Email
-            </button>
-        </form>
-
-        <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-        </div>
+        <h2 class="text-4xl font-bold text-center text-gray-900 mb-2">Welcome Back</h2>
+        <p class="text-center text-gray-600 mb-8">Sign in to access your smart storage</p>
 
         <!-- ✅ Google Login Button -->
-        <button id="google-login-btn"
-            class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-4 text-gray-700 text-lg rounded-xl transition-all hover:bg-gray-100 active:scale-95 shadow-md font-semibold">
-            <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6">
-            Sign in with Google
-        </button>
+        <a href="http://localhost:5003/auth/google" 
+           class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 py-4 px-6 text-gray-700 text-lg rounded-xl transition-all duration-300 hover:bg-gray-50 hover:border-gray-300 active:scale-95 shadow-lg hover:shadow-xl font-semibold group">
+            <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300">
+            <span class="group-hover:text-gray-900 transition-colors duration-300">Sign in with Google</span>
+        </a>
 
-        <!-- ✅ Register Link -->
-        <p class="mt-6 text-center text-sm text-gray-600">
-            Don't have an account?
-            <a href="/register.html" class="font-medium text-green-600 hover:text-green-500">
-                Register here
-            </a>
+        <!-- ✅ Footer Text -->
+        <p class="mt-8 text-center text-sm text-gray-500">
+            By signing in, you agree to our 
+            <a href="#" class="text-green-600 hover:text-green-700 font-medium">Terms of Service</a> and 
+            <a href="#" class="text-green-600 hover:text-green-700 font-medium">Privacy Policy</a>
         </p>
     </div>
 
-    <script>
-        document.getElementById("google-login-btn").addEventListener("click", function () {
-            console.log("🔄 Redirecting to Google login...");
-            window.location.href = "http://localhost:5003/auth/google";  // Your backend Google OAuth route
-        });
-    </script>
-
+    <!-- ✅ Decorative Elements -->
+    <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-900 to-transparent"></div>
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-gray-900 to-transparent"></div>
 </body>
 
 </html>
