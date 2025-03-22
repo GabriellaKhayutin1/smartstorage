@@ -170,6 +170,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             throw fetchError;
         }
 
+        // Load monthly CO2 data and update chart
+        await loadMonthlyCO2Data();
+
     } catch (error) {
         console.error('Error:', error);
         // Update UI to show error state
@@ -505,4 +508,137 @@ async function loadUserProfile() {
                 </tr>`;
         }
     }
+}
+
+async function loadMonthlyCO2Data() {
+    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    if (!token) {
+        console.error('No token found for monthly CO2 data');
+        return;
+    }
+
+    try {
+        const year = new Date().getFullYear();
+        console.log('Fetching monthly CO2 data for year:', year);
+        const response = await fetch(`${API_BASE_URL}/api/co2-savings/monthly?year=${year}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch monthly CO2 data:', response.status);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error('Failed to fetch monthly CO2 data');
+        }
+
+        const monthlyData = await response.json();
+        console.log('Raw monthly CO2 data:', monthlyData);
+
+        // Transform the data to ensure proper structure
+        const transformedData = monthlyData.map(month => ({
+            month: month.month || 0,
+            co2Saved: typeof month.co2Saved === 'number' ? month.co2Saved : 0,
+            itemsCount: typeof month.itemsCount === 'number' ? month.itemsCount : 0
+        }));
+
+        console.log('Transformed monthly data:', transformedData);
+        updateCO2Chart(transformedData);
+    } catch (error) {
+        console.error('Error loading monthly CO2 data:', error);
+    }
+}
+
+function updateCO2Chart(monthlyData) {
+    console.log('Updating CO2 chart with data:', monthlyData);
+    const canvas = document.getElementById('monthlyCO2Chart');
+    if (!canvas) {
+        console.error('Monthly CO2 chart canvas not found');
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error('Could not get 2D context for chart');
+        return;
+    }
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Ensure we have data for all months with proper values
+    const chartData = monthNames.map((_, index) => {
+        const monthData = monthlyData.find(m => m.month === index + 1) || { co2Saved: 0, itemsCount: 0 };
+        const co2Value = typeof monthData.co2Saved === 'number' ? monthData.co2Saved : 0;
+        return {
+            co2Saved: parseFloat(co2Value.toFixed(2)),
+            itemsCount: monthData.itemsCount || 0
+        };
+    });
+
+    console.log('Final chart data:', chartData);
+    
+    // Calculate the maximum value for better scaling
+    const maxCO2Value = Math.max(...chartData.map(m => m.co2Saved));
+    console.log('Max CO2 value:', maxCO2Value);
+    
+    // Destroy existing chart if it exists
+    if (window.monthlyCO2Chart instanceof Chart) {
+        window.monthlyCO2Chart.destroy();
+    }
+
+    // Create new chart with explicit y-axis configuration
+    window.monthlyCO2Chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: monthNames,
+            datasets: [{
+                label: 'CO2 Saved (kg)',
+                data: chartData.map(m => m.co2Saved),
+                backgroundColor: 'rgba(92, 141, 90, 0.8)',
+                borderColor: 'rgba(92, 141, 90, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    min: 0,
+                    max: maxCO2Value > 0 ? maxCO2Value * 1.1 : 100,
+                    ticks: {
+                        stepSize: maxCO2Value > 100 ? 20 : maxCO2Value > 50 ? 10 : 5,
+                        callback: function(value) {
+                            return value + ' kg';
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'CO2 Saved (kg)'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Monthly CO2 Savings for ${new Date().getFullYear()}`
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const monthData = chartData[context.dataIndex];
+                            return [
+                                `CO2 Saved: ${monthData.co2Saved.toFixed(2)} kg`,
+                                `Items Managed: ${monthData.itemsCount}`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+    console.log('Chart created successfully');
 } 
