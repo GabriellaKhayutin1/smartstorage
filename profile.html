@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Smart Pantry</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script defer src="js/auth.js"></script>
@@ -112,6 +113,14 @@
                 <div class="stat-card glass-card rounded-xl p-6 text-center">
                     <div class="text-4xl font-bold text-green-600 mb-2" id="waste-prevented">0</div>
                     <div class="text-gray-600">Waste Prevented (kg)</div>
+                </div>
+            </div>
+
+            <!-- Monthly CO2 Savings Chart -->
+            <div class="glass-card rounded-xl p-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Monthly CO2 Savings</h2>
+                <div class="w-full h-[400px]">
+                    <canvas id="monthlyCO2Chart"></canvas>
                 </div>
             </div>
 
@@ -249,6 +258,112 @@
                 </table>
             </div>
         </div>
+
+        <!-- Subscription Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Premium Subscription</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Weekly Plan -->
+                <div class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Weekly Plan</h3>
+                    <p class="text-3xl font-bold text-green-600 mb-4">€4.99<span class="text-sm text-gray-500">/week</span></p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Advanced Analytics
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Priority Support
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Custom Categories
+                        </li>
+                    </ul>
+                    <button onclick="subscribe('weekly')" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+                        Subscribe Weekly
+                    </button>
+                </div>
+
+                <!-- Monthly Plan -->
+                <div class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Monthly Plan</h3>
+                    <p class="text-3xl font-bold text-green-600 mb-4">€19.99<span class="text-sm text-gray-500">/month</span></p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            All Weekly Features
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Family Sharing
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Advanced Reports
+                        </li>
+                    </ul>
+                    <button onclick="subscribe('monthly')" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+                        Subscribe Monthly
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+    async function subscribe(planType) {
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const response = await fetch('http://localhost:5003/api/payments/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    planType,
+                    redirectUrl: 'http://localhost:5000/payment-status.html',
+                    webhookUrl: 'http://localhost:5003/api/payments/webhook'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create subscription');
+            }
+
+            const data = await response.json();
+            
+            // Redirect to Mollie checkout
+            if (data.checkoutUrl) {
+                window.location.href = data.checkoutUrl;
+            } else {
+                throw new Error('No checkout URL received');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to create subscription. Please try again.');
+        }
+    }
+    </script>
 </body>
 </html>
