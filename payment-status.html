@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Status - Smart Storage</title>
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <a href="/" class="text-2xl font-bold text-green-600">Smart Storage</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Payment Status</h1>
+                    
+                    <div id="paymentStatus" class="text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+                        <p class="mt-4 text-gray-600">Checking payment status...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function checkPaymentStatus() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const paymentId = urlParams.get('id');
+
+                if (!paymentId) {
+                    throw new Error('No payment ID found');
+                }
+
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                if (!token) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:5003/api/payments/status/${paymentId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to get payment status');
+                }
+
+                const data = await response.json();
+                const statusElement = document.getElementById('paymentStatus');
+
+                switch (data.status) {
+                    case 'paid':
+                        statusElement.innerHTML = `
+                            <div class="text-green-600 text-4xl mb-4">✓</div>
+                            <h2 class="text-xl font-semibold text-green-600 mb-2">Payment Successful!</h2>
+                            <p class="text-gray-600">Thank you for your payment.</p>
+                            <a href="/" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                Return to Home
+                            </a>
+                        `;
+                        break;
+                    case 'failed':
+                        statusElement.innerHTML = `
+                            <div class="text-red-600 text-4xl mb-4">✕</div>
+                            <h2 class="text-xl font-semibold text-red-600 mb-2">Payment Failed</h2>
+                            <p class="text-gray-600">Something went wrong with your payment.</p>
+                            <a href="/payment.html" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                Try Again
+                            </a>
+                        `;
+                        break;
+                    case 'pending':
+                        statusElement.innerHTML = `
+                            <div class="text-yellow-600 text-4xl mb-4">⌛</div>
+                            <h2 class="text-xl font-semibold text-yellow-600 mb-2">Payment Pending</h2>
+                            <p class="text-gray-600">Your payment is still being processed.</p>
+                            <p class="text-sm text-gray-500 mt-2">This page will automatically refresh in 5 seconds.</p>
+                        `;
+                        setTimeout(checkPaymentStatus, 5000);
+                        break;
+                    default:
+                        statusElement.innerHTML = `
+                            <div class="text-gray-600 text-4xl mb-4">?</div>
+                            <h2 class="text-xl font-semibold text-gray-600 mb-2">Unknown Status</h2>
+                            <p class="text-gray-600">We couldn't determine the status of your payment.</p>
+                            <a href="/payment.html" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                                Try Again
+                            </a>
+                        `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('paymentStatus').innerHTML = `
+                    <div class="text-red-600 text-4xl mb-4">⚠️</div>
+                    <h2 class="text-xl font-semibold text-red-600 mb-2">Error</h2>
+                    <p class="text-gray-600">Failed to check payment status.</p>
+                    <a href="/payment.html" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                        Try Again
+                    </a>
+                `;
+            }
+        }
+
+        // Check payment status when page loads
+        checkPaymentStatus();
+    </script>
+</body>
+</html> 

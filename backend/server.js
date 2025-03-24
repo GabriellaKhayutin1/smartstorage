@@ -16,6 +16,9 @@ import authenticate from "./middleware/authMiddleware.js";
 import Ingredient from "./models/Ingredient.js";
 import User from "./models/User.js";
 import Analytics from "./models/Analytics.js";
+import MonthlyCO2 from "./models/MonthlyCO2.js";
+import { CO2_SAVINGS } from "../js/co2Calculator.js";
+import paymentRoutes from './routes/paymentRoutes.js';
 
 dotenv.config(); // Load environment variables
 const app = express();
@@ -58,6 +61,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // ✅ Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -178,6 +182,41 @@ app.post("/api/ingredients", authenticate, async (req, res) => {
         // Save to database
         await ingredient.save();
         console.log("✅ New ingredient added:", ingredient);
+
+        // Update monthly CO2 savings
+        const currentDate = new Date();
+        const month = currentDate.getMonth() + 1;
+        const year = currentDate.getFullYear();
+
+        // Find or create monthly CO2 record
+        let monthlyCO2 = await MonthlyCO2.findOne({
+            userId: req.user.userId,
+            month,
+            year
+        });
+
+        if (!monthlyCO2) {
+            monthlyCO2 = new MonthlyCO2({
+                userId: req.user.userId,
+                month,
+                year
+            });
+        }
+
+        // Calculate CO2 saved for this ingredient
+        const co2SavedForIngredient = CO2_SAVINGS[category] || 0;
+
+        // Update monthly totals
+        monthlyCO2.co2Saved += co2SavedForIngredient;
+        monthlyCO2.itemsCount += 1;
+        monthlyCO2.ingredients.push({
+            name,
+            category,
+            co2Saved: co2SavedForIngredient
+        });
+
+        await monthlyCO2.save();
+        console.log("✅ Monthly CO2 savings updated:", monthlyCO2);
 
         // Get user to access refresh token
         const user = await User.findById(req.user.userId);
@@ -374,6 +413,63 @@ app.get("/refresh_token", authenticate, async (req, res) => {
     } catch (error) {
         console.error("❌ Error refreshing access token:", error);
         res.status(500).json({ error: "Failed to refresh access token" });
+    }
+});
+
+// ✅ Get Monthly CO2 Savings
+app.get("/api/co2-savings/monthly", authenticate, async (req, res) => {
+    try {
+        const { year } = req.query;
+        const queryYear = parseInt(year) || new Date().getFullYear();
+
+        // Get all ingredients for the user, without date filtering
+        const ingredients = await Ingredient.find({
+            userId: req.user.userId
+        });
+
+        console.log(`Found ${ingredients.length} ingredients for user`);
+
+        // Initialize monthly data
+        const monthlySavings = Array.from({ length: 12 }, (_, i) => ({
+            month: i + 1,
+            co2Saved: 0,
+            itemsCount: 0,
+            ingredients: []
+        }));
+
+        // Calculate CO2 savings for each ingredient
+        ingredients.forEach(ingredient => {
+            const createdAt = new Date(ingredient.createdAt);
+            const ingredientYear = createdAt.getFullYear();
+            
+            // Only include in monthly breakdown if it's from the requested year
+            if (ingredientYear === queryYear) {
+                const month = createdAt.getMonth();
+                const co2SavedForIngredient = CO2_SAVINGS[ingredient.category] || 0;
+                
+                monthlySavings[month].co2Saved += co2SavedForIngredient;
+                monthlySavings[month].itemsCount += 1;
+                monthlySavings[month].ingredients.push({
+                    name: ingredient.name,
+                    category: ingredient.category,
+                    co2Saved: co2SavedForIngredient,
+                    createdAt: ingredient.createdAt
+                });
+
+                console.log(`Added ${ingredient.name} (${ingredient.category}) with ${co2SavedForIngredient}kg CO2 to month ${month + 1}`);
+            }
+        });
+
+        console.log('Monthly savings calculated:', monthlySavings.map(m => ({
+            month: m.month,
+            co2Saved: m.co2Saved,
+            itemsCount: m.itemsCount
+        })));
+
+        res.json(monthlySavings);
+    } catch (error) {
+        console.error("❌ Error fetching monthly CO2 savings:", error);
+        res.status(500).json({ error: "Failed to fetch monthly CO2 savings" });
     }
 });
 
