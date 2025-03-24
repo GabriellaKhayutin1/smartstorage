@@ -5,6 +5,7 @@ import { CO2_SAVINGS } from "../../js/co2Calculator.js";
 
 const router = express.Router();
 
+
 // Helper function to extract name from email
 function extractName(email) {
     if (!email) return 'Anonymous User';

@@ -1,19 +1,18 @@
 // Leveling system configuration
 const LEVELS = [
     { title: "Waste Watcher", icon: "🌱", requiredPoints: 0 },
-    { title: "Eco Warrior", icon: "🌿", requiredPoints: 100 },
-    { title: "Green Guardian", icon: "🌳", requiredPoints: 250 },
-    { title: "Earth Protector", icon: "🌍", requiredPoints: 500 },
-    { title: "Zero Waste Hero", icon: "⭐", requiredPoints: 1000 }
+    { title: "Eco Warrior", icon: "🌿", requiredPoints: 200 },
+    { title: "Green Guardian", icon: "🌳", requiredPoints: 600 },
+    { title: "Earth Protector", icon: "🌍", requiredPoints: 1500 },
+    { title: "Zero Waste Hero", icon: "⭐", requiredPoints: 3000 }
 ];
+
 
 // Calculate points based on user's stats
 function calculatePoints(co2Saved, itemsManaged, wastePrevented) {
-    // Points formula: 
-    // 1 point per kg of CO2 saved
-    // 2 points per item managed
-    // 5 points per kg of waste prevented
-    return Math.floor(co2Saved + (itemsManaged * 2) + (wastePrevented * 5));
+    // Make points scale slower
+    return Math.floor((co2Saved * 0.5) + (itemsManaged * 1.5) + (wastePrevented * 3));
+    
 }
 
 // Get current level based on points
@@ -62,7 +61,9 @@ function updateLevelUI(points) {
         if (nextLevelTitle) {
             if (currentLevelIndex < LEVELS.length - 1) {
                 const nextLevel = LEVELS[currentLevelIndex + 1];
-                nextLevelTitle.textContent = nextLevel.title;
+                nextLevelTitle.textContent = `${nextLevel.title} (${points}/${nextLevel.requiredPoints} pts)`;
+
+                        
             } else {
                 nextLevelTitle.textContent = "Max Level Reached!";
             }
@@ -70,19 +71,24 @@ function updateLevelUI(points) {
 
         // Update progress bar
         if (progressPercentage) progressPercentage.textContent = `${progress}%`;
-        if (progressBar) progressBar.style.width = `${progress}%`;
+        // Progress bar spans only 1/5 (20%) per level
+const segmentWidth = 100 / (LEVELS.length - 1); // e.g. 25% per level if 5 levels
+const overallProgress = (currentLevelIndex * segmentWidth) + ((progress / 100) * segmentWidth);
+if (progressBar) progressBar.style.width = `${overallProgress}%`;
+
 
         // Update level milestones to show current level
         const milestones = document.querySelectorAll('.level-milestone');
-        milestones.forEach((milestone, index) => {
-            if (index <= currentLevelIndex) {
-                milestone.classList.add('text-green-600');
-                milestone.classList.remove('text-gray-700');
-            } else {
-                milestone.classList.remove('text-green-600');
-                milestone.classList.add('text-gray-700');
-            }
-        });
+milestones.forEach((milestone, index) => {
+    milestone.classList.remove('active', 'text-green-600');
+    milestone.classList.add('text-gray-700');
+
+    if (index === currentLevelIndex) {
+        milestone.classList.add('active', 'text-green-600');
+        milestone.classList.remove('text-gray-700');
+    }
+});
+
     } catch (error) {
         console.error('Error updating level UI:', error);
     }
@@ -90,14 +96,15 @@ function updateLevelUI(points) {
 
 // Initialize leveling system
 function initializeLevelSystem() {
+    console.log("🔁 Initializing Level System...");
+
     try {
-        // Get stats from the page
         const totalSaved = document.getElementById('total-saved');
         const itemsManaged = document.getElementById('items-managed');
         const wastePrevented = document.getElementById('waste-prevented');
 
         if (!totalSaved || !itemsManaged || !wastePrevented) {
-            console.log('Stats elements not found, waiting for them to load...');
+            console.log('⏳ Stats elements not found, waiting for them to load...');
             return;
         }
 
@@ -105,56 +112,77 @@ function initializeLevelSystem() {
         const itemsManagedCount = parseInt(itemsManaged.textContent) || 0;
         const wastePreventedAmount = parseFloat(wastePrevented.textContent) || 0;
 
-        // Calculate total points
         const points = calculatePoints(co2Saved, itemsManagedCount, wastePreventedAmount);
+        const levelIndex = getCurrentLevel(points);
+        const levelTitle = LEVELS[levelIndex]?.title;
 
-        // Update UI
+        // 🔍 Debug logs
+        console.log("🌿 CO2 Saved:", co2Saved);
+        console.log("📦 Items Managed:", itemsManagedCount);
+        console.log("🗑️ Waste Prevented:", wastePreventedAmount);
+        console.log("✅ Total Points:", points);
+        console.log(`🏅 Current Level: ${levelTitle} (Level ${levelIndex + 1})`);
+
         updateLevelUI(points);
     } catch (error) {
-        console.error('Error initializing level system:', error);
+        console.error('🚨 Error initializing level system:', error);
     }
 }
+
 
 // Create a MutationObserver to watch for changes in the stats
 function observeStatsChanges() {
-    try {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'characterData' || mutation.type === 'childList') {
-                    initializeLevelSystem();
-                }
-            });
-        });
+    const statsIds = ['total-saved', 'items-managed', 'waste-prevented'];
+    const elements = statsIds.map(id => document.getElementById(id));
 
-        // Observe changes in the stats elements
-        const statsElements = [
-            document.getElementById('total-saved'),
-            document.getElementById('items-managed'),
-            document.getElementById('waste-prevented')
-        ];
-
-        statsElements.forEach(element => {
-            if (element) {
-                observer.observe(element, {
-                    characterData: true,
-                    childList: true,
-                    subtree: true
-                });
-            }
-        });
-    } catch (error) {
-        console.error('Error setting up stats observer:', error);
+    // Check if any of the elements are missing
+    if (elements.some(el => !el)) {
+        console.warn('⏳ Waiting for stats elements to load...');
+        setTimeout(observeStatsChanges, 200); // retry
+        return;
     }
+
+    const observer = new MutationObserver(() => {
+        const co2Saved = parseFloat(elements[0].textContent);
+        const itemsManaged = parseInt(elements[1].textContent);
+        const wastePrevented = parseFloat(elements[2].textContent);
+
+        // Check if all values are valid
+        if (
+            isNaN(co2Saved) ||
+            isNaN(itemsManaged) ||
+            isNaN(wastePrevented)
+        ) {
+            console.log("🚧 Waiting for valid stat values...");
+            return;
+        }
+
+        // ✅ Valid values, continue
+        console.log("🌿 CO₂ Saved:", co2Saved);
+        console.log("📦 Items Managed:", itemsManaged);
+        console.log("🗑️ Waste Prevented:", wastePrevented);
+
+        const points = calculatePoints(co2Saved, itemsManaged, wastePrevented);
+        console.log("✅ Total Points:", points);
+
+        const levelIndex = getCurrentLevel(points);
+        console.log(`🏅 Current Level: ${LEVELS[levelIndex].title} (Level ${levelIndex + 1})`);
+
+        updateLevelUI(points);
+    });
+
+    elements.forEach(el => {
+        observer.observe(el, { childList: true, subtree: true, characterData: true });
+    });
 }
+
 
 // Wait for DOM content to be loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Add a small delay to ensure all elements are loaded
-    setTimeout(() => {
-        initializeLevelSystem();
-        observeStatsChanges();
-    }, 100);
+    observeStatsChanges(); // Smart and safe observer
 });
+
+
 
 // Export functions for use in other files
 window.levelSystem = {
