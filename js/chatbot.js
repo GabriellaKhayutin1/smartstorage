@@ -68,7 +68,7 @@ const storageTips = {
         shelfLife: '2-3 weeks',
         tips: ['Store in a sealed bag', 'Keep in the crisper drawer', 'Check for mold regularly'],
         commonMistakes: ['Leaving at room temperature', 'Storing in open container'],
-        relatedItems: ['sealed bag', 'crisper drawer']
+        relatedItems: ['sealed bag', 'crisper drawer']  
     },
     'garlic': {
         storage: 'Store whole garlic bulbs in a cool, dark, and dry place with good ventilation. Once peeled, store in the refrigerator.',
@@ -111,6 +111,90 @@ const storageTips = {
         tips: ['Keep in the crisper drawer', 'Store away from apples', 'Check for soft spots regularly'],
         commonMistakes: ['Storing at room temperature', 'Keeping near apples'],
         relatedItems: ['crisper drawer', 'refrigerator']
+    },
+    'strawberry': {
+        storage: 'Store in the refrigerator in a single layer on a paper towel-lined plate or container.',
+        shelfLife: '3-7 days',
+        tips: ['Do not wash until ready to eat', 'Store in a single layer to prevent bruising', 'Check for mold regularly'],
+        commonMistakes: ['Washing before storing', 'Storing in a sealed container'],
+        relatedItems: ['paper towel', 'plate', 'container']
+    },
+    'broccoli': {
+        storage: 'Store in the refrigerator crisper drawer, unwashed, in a perforated plastic bag.',
+        shelfLife: '3-5 days',
+        tips: ['Store unwashed', 'Keep in a perforated plastic bag', 'Check for yellowing regularly'],
+        commonMistakes: ['Washing before storing', 'Storing in a sealed bag'],
+        relatedItems: ['perforated plastic bag', 'crisper drawer']
+    },
+    'bread': {
+        storage: 'Store at room temperature in a bread box or paper bag. For longer storage, freeze.',
+        shelfLife: '3-5 days (room temperature), 3 months (frozen)',
+        tips: ['Store in a bread box or paper bag', 'Freeze for longer storage', 'Avoid storing in the refrigerator'],
+        commonMistakes: ['Storing in the refrigerator', 'Not freezing for long-term storage'],
+        relatedItems: ['bread box', 'paper bag', 'freezer']
+    },
+    'yogurt': {
+        storage: 'Store in the refrigerator at or below 40°F. Keep tightly sealed.',
+        shelfLife: '1-2 weeks',
+        tips: ['Keep tightly sealed', 'Store at or below 40°F', 'Check for mold or off smell'],
+        commonMistakes: ['Leaving out too long', 'Not sealing properly'],
+        relatedItems: ['refrigerator', 'airtight container']
+    },
+    'egg': {
+        storage: 'Store in the original carton in the coldest part of the refrigerator.',
+        shelfLife: '3-5 weeks',
+        tips: ['Keep in the original carton', 'Store in the coldest part of the fridge', 'Do not wash before storing'],
+        commonMistakes: ['Storing in the door', 'Washing before storing'],
+        relatedItems: ['egg carton', 'refrigerator']
+    },
+    'butter': {
+        storage: 'Store in the refrigerator. Can be frozen for longer storage.',
+        shelfLife: '1-3 months (refrigerator), 6-9 months (freezer)',
+        tips: ['Store in the original packaging', 'Freeze for longer storage', 'Keep away from strong-smelling foods'],
+        commonMistakes: ['Leaving out at room temperature', 'Not sealing properly before freezing'],
+        relatedItems: ['refrigerator', 'freezer', 'airtight container']
+    },
+    'grape': {
+        storage: 'Store unwashed in the refrigerator in a perforated plastic bag or container.',
+        shelfLife: '1-2 weeks',
+        tips: ['Store unwashed', 'Keep in a perforated plastic bag', 'Check for mold regularly'],
+        commonMistakes: ['Washing before storing', 'Storing in a sealed container'],
+        relatedItems: ['perforated plastic bag', 'refrigerator']
+    },
+    'mushroom': {
+        storage: 'Store in the refrigerator in a paper bag or original packaging.',
+        shelfLife: '4-7 days',
+        tips: ['Store in a paper bag', 'Keep in the refrigerator', 'Do not wash before storing'],
+        commonMistakes: ['Storing in plastic bags', 'Washing before storing'],
+        relatedItems: ['paper bag', 'refrigerator']
+    },
+    'celery': {
+        storage: 'Store in the refrigerator crisper drawer, wrapped in aluminum foil.',
+        shelfLife: '1-2 weeks',
+        tips: ['Wrap in aluminum foil', 'Store in the crisper drawer', 'Check for wilting regularly'],
+        commonMistakes: ['Storing in plastic bags', 'Not wrapping properly'],
+        relatedItems: ['aluminum foil', 'crisper drawer']
+    },
+    'peach': {
+        storage: 'Store unripe peaches at room temperature until ripe, then refrigerate.',
+        shelfLife: '3-5 days (room temperature), 1 week (refrigerator)',
+        tips: ['Store unripe at room temperature', 'Refrigerate once ripe', 'Check for bruises regularly'],
+        commonMistakes: ['Storing unripe peaches in the fridge', 'Not checking for bruises'],
+        relatedItems: ['room temperature storage', 'refrigerator']
+    },
+    'zucchini': {
+        storage: 'Store in the refrigerator crisper drawer in a perforated plastic bag.',
+        shelfLife: '1-2 weeks',
+        tips: ['Store in a perforated plastic bag', 'Keep in the crisper drawer', 'Check for soft spots regularly'],
+        commonMistakes: ['Storing at room temperature', 'Storing in a sealed bag'],
+        relatedItems: ['perforated plastic bag', 'crisper drawer']
+    },
+    'pear': {
+        storage: 'Store unripe pears at room temperature until ripe, then refrigerate.',
+        shelfLife: '3-5 days (room temperature), 1 week (refrigerator)',
+        tips: ['Store unripe at room temperature', 'Refrigerate once ripe', 'Check for bruises regularly'],
+        commonMistakes: ['Storing unripe pears in the fridge', 'Not checking for bruises'],
+        relatedItems: ['room temperature storage', 'refrigerator']
     }
 };
 
@@ -203,8 +287,8 @@ function initializeChatbot() {
                 let response = `Here's how to store ${food}:\n\n`;
                 response += `Storage: ${info.storage}\n`;
                 response += `Shelf Life: ${info.shelfLife}\n\n`;
-                if (info.tips) response += `Additional Tips:\n${info.tips}\n\n`;
-                if (info.commonMistakes) response += `Common Mistakes:\n${info.commonMistakes}\n\n`;
+                if (info.tips) response += `Additional Tips:\n${info.tips.join(', ')}\n\n`;
+                if (info.commonMistakes) response += `Common Mistakes:\n${info.commonMistakes.join(', ')}\n\n`;
                 if (info.relatedItems) response += `Related Items:\n${info.relatedItems.join(', ')}`;
                 return response;
             }
@@ -212,13 +296,30 @@ function initializeChatbot() {
 
         // Check for general storage questions
         if (message.includes('temperature')) {
-            return generalKnowledge.temperature;
+            return `Fridge: ${generalKnowledge.temperature.fridge}\nFreezer: ${generalKnowledge.temperature.freezer}\nRoom: ${generalKnowledge.temperature.room}\nPantry: ${generalKnowledge.temperature.pantry}`;
         }
         if (message.includes('container')) {
-            return generalKnowledge.containers;
+            return `Airtight: ${generalKnowledge.containers.airtight}\nGlass: ${generalKnowledge.containers.glass}\nPlastic: ${generalKnowledge.containers.plastic}\nMesh: ${generalKnowledge.containers.mesh}\nPaper: ${generalKnowledge.containers.paper}`;
         }
         if (message.includes('general') || message.includes('tip')) {
-            return generalKnowledge.general_tips;
+            return `Ethylene: ${generalKnowledge.general_tips.ethylene}\nMoisture: ${generalKnowledge.general_tips.moisture}\nTemperature: ${generalKnowledge.general_tips.temperature}\nVentilation: ${generalKnowledge.general_tips.ventilation}\nOrganization: ${generalKnowledge.general_tips.organization}`;
+        }
+
+        // Check for categories
+        if (message.includes('root vegetables')) {
+            return `Root Vegetables: ${generalKnowledge.categories['root vegetables'].join(', ')}`;
+        }
+        if (message.includes('leafy greens')) {
+            return `Leafy Greens: ${generalKnowledge.categories['leafy greens'].join(', ')}`;
+        }
+        if (message.includes('fruits')) {
+            return `Fruits: ${generalKnowledge.categories.fruits.join(', ')}`;
+        }
+        if (message.includes('dairy')) {
+            return `Dairy: ${generalKnowledge.categories.dairy.join(', ')}`;
+        }
+        if (message.includes('meat')) {
+            return `Meat: ${generalKnowledge.categories.meat.join(', ')}`;
         }
 
         // Default response
@@ -227,4 +328,4 @@ function initializeChatbot() {
 }
 
 // Initialize chatbot when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeChatbot); 
+document.addEventListener('DOMContentLoaded', initializeChatbot);
