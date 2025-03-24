@@ -22,7 +22,7 @@ const app = express();
 
 // ✅ CORS Configuration (Fixing Issues)
 const corsOptions = {
-    origin: "http://127.0.0.1:5501", // ✅ Allow requests from frontend
+    origin: "http://127.0.0.1:5502", // ✅ Allow requests from frontend
     credentials: true, // ✅ Allow cookies & authentication
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -31,7 +31,7 @@ app.use(cors(corsOptions));
 
 // ✅ Explicitly Handle Preflight Requests
 app.options("*", (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5501");
+    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5502");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.header("Access-Control-Allow-Credentials", "true");
@@ -138,7 +138,7 @@ app.get("/oauthcallback", async (req, res) => {
             maxAge: 3600 * 1000
         });
 
-        res.redirect(`http://127.0.0.1:5501/index.html?token=${jwtToken}`);
+        res.redirect(`http://127.0.0.1:5502/index.html?token=${jwtToken}`);
     } catch (error) {
         console.error("❌ OAuth Callback Error:", error);
         res.status(500).send("Authentication failed.");
