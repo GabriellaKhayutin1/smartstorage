@@ -311,10 +311,10 @@ function initializeProfilePictureUpload() {
             const data = await response.json();
             
             // Update the profile picture display
-            profilePicture.src = `${API_BASE_URL}${data.profilePicture}`;
+            profilePicture.src = `${API_BASE_URL}${data.profilePicture}?timestamp=${new Date().getTime()}`;
             
             // Save to localStorage for persistence
-            localStorage.setItem('profilePicture', `${API_BASE_URL}${data.profilePicture}`);
+            localStorage.setItem(`profilePicture_${userData.email}`, `${API_BASE_URL}${data.profilePicture}?timestamp=${new Date().getTime()}`);
 
             // Show success message
             showNotification('Profile picture updated successfully!', 'success');
@@ -325,29 +325,6 @@ function initializeProfilePictureUpload() {
     });
 }
 
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    } text-white z-50 transition-all duration-300 transform translate-y-0 opacity-100`;
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    requestAnimationFrame(() => {
-        notification.style.transform = 'translateY(0)';
-        notification.style.opacity = '1';
-    });
-
-    setTimeout(() => {
-        notification.style.transform = 'translateY(-100%)';
-        notification.style.opacity = '0';
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
-}
-
 // Initialize everything when DOM is loaded
 document.addEventListener("DOMContentLoaded", async () => {
     try {
@@ -356,7 +333,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Load saved profile picture if exists
         const profilePicture = document.getElementById('profile-picture');
-        const savedProfilePicture = localStorage.getItem('profilePicture');
+        const savedProfilePicture = localStorage.getItem(`profilePicture_${userData.email}`);
         if (profilePicture && savedProfilePicture) {
             profilePicture.src = savedProfilePicture;
         }
@@ -641,4 +618,4 @@ function updateCO2Chart(monthlyData) {
         }
     });
     console.log('Chart created successfully');
-} 
+}
