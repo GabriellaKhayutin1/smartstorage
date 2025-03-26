@@ -1,16 +1,15 @@
 // ✅ Check if user is authenticated
 function checkAuth() {
-    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
-    if (!token) {
-        return false;
-    }
+    const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+    if (!token) return false;
+
     try {
         // Check if token is expired
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const expiration = payload.exp * 1000; // Convert to milliseconds
+        const expiration = payload.exp * 1000;
         if (Date.now() >= expiration) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("authToken");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("authToken");
             return false;
         }
         return true;
@@ -22,17 +21,16 @@ function checkAuth() {
 
 // ✅ Handle Google OAuth callback
 document.addEventListener("DOMContentLoaded", () => {
-    // Check if we're on the callback page
     if (window.location.pathname === '/auth/google/callback') {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
-        
+
         if (token) {
-            localStorage.setItem("token", token);
+            sessionStorage.setItem("token", token);
             window.location.href = "/profile.html"; // Redirect to profile page
         } else {
             console.error("No token received from Google OAuth");
-            window.location.href = "/login.html"; // Redirect back to login
+            window.location.href = "/login.html";
         }
     }
 
@@ -41,8 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault(); // Prevent form from submitting normally
-            
+            e.preventDefault();
+
             const email = document.getElementById("login-email").value;
             const password = document.getElementById("login-password").value;
 
@@ -58,9 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     throw new Error(data.error || "Login failed");
                 }
 
-                localStorage.setItem("token", data.token);
+                sessionStorage.setItem("token", data.token);
                 alert("Login successful!");
-                window.location.href = "/profile.html"; // Redirect to profile page
+                window.location.href = "/profile.html";
             } catch (error) {
                 console.error("Error logging in:", error);
                 alert(error.message);
@@ -74,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const password = document.getElementById("register-password").value;
 
             try {
-                const response = await fetch("http://localhost:5003/api/auth/register", { 
+                const response = await fetch("http://localhost:5003/api/auth/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password }),
@@ -97,10 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ✅ Handle logout
 function logout() {
-    // Clear authentication data
-    localStorage.removeItem("token");
-    localStorage.removeItem("authToken");
-    
-    // Redirect to login page
+    sessionStorage.clear(); // Clears all session-based data
     window.location.href = "/login.html";
 }

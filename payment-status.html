@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Status - Smart Storage</title>
     <link href="css/style.css" rel="stylesheet">
+    <link rel="shortcut icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen">
@@ -46,7 +49,7 @@
                     throw new Error('No payment ID found');
                 }
 
-                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const token = sessionStorage.getItem('token') || sessionStorage.getItem('authToken');
                 if (!token) {
                     window.location.href = '/login.html';
                     return;
@@ -117,6 +120,46 @@
                 `;
             }
         }
+        function checkAuth() {
+      const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+      if (!token) return false;
+
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiration = payload.exp * 1000;
+        if (Date.now() >= expiration) {
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("authToken");
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.error("Invalid token:", err);
+        return false;
+      }
+    }
+
+    // ✅ This function is executed once the DOM is loaded
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Check if token is in the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get("token");
+
+      if (tokenFromUrl) {
+        sessionStorage.setItem("authToken", tokenFromUrl);
+        window.history.replaceState(null, null, window.location.pathname);
+      }
+
+      // 2. Check if token is valid
+      if (!checkAuth()) {
+        alert("You must be logged in to access this page.");
+        window.location.href = "/login.html";
+      } else {
+        // ✅ Show the page
+        document.body.classList.remove("hidden");
+        console.log("✅ Authenticated, showing content.");
+      }
+    });
 
         // Check payment status when page loads
         checkPaymentStatus();

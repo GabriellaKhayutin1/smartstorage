@@ -69,7 +69,7 @@ function hideModal() {
 
 // Function to add an ingredient
 async function addIngredient() {
-    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    const token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token");
     if (!token) {
         alert("⚠ You must log in first!");
         window.location.href = "login.html";  // Redirect to login if no token
@@ -110,8 +110,8 @@ async function addIngredient() {
         if (!response.ok) {
             if (response.status === 401) {
                 // Token is invalid or expired
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("token");
+                sessionStorage.removeItem("authToken");
+                sessionStorage.removeItem("token");
                 alert("Your session has expired. Please log in again.");
                 window.location.href = "login.html";
                 return;
@@ -144,7 +144,7 @@ async function updateIngredient(id) {
         return;
     }
 
-    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    const token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token");
     if (!token) {
         alert("⚠ You must log in first!");
         window.location.href = "login.html";
@@ -183,8 +183,8 @@ async function removeIngredient(id) {
     const confirmDelete = confirm("🛑 Are you sure you want to delete this ingredient?");
     if (!confirmDelete) return; // 🚫 Stop if the user cancels
 
-    // ✅ Get token from localStorage
-    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    // ✅ Get token from sessionStorage
+    const token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token");
     if (!token) {
         alert("⚠ You must log in first!");
         window.location.href = "login.html"; // Redirect to login
@@ -213,7 +213,7 @@ async function removeIngredient(id) {
 
 /* 🔹 Fetch and Update Pantry UI */
 async function loadPantry() {
-    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+    const token = sessionStorage.getItem("authToken") || sessionStorage.getItem("token");
     if (!token) {
         alert("⚠ You must log in first!");
         window.location.href = "login.html"; // Redirect to login if no token
