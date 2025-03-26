@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Get user ID from token
-    const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+    const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
     if (!token) {
         console.error('No authentication token found');
         return;
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Get user ID from token
-            const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
             const payload = JSON.parse(atob(token.split('.')[1]));
             const userId = payload.userId;
 
@@ -72,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update profile picture display
             profilePicture.src = `http://localhost:5003${data.profilePicture}`;
             
-            // Save to localStorage with user-specific key
-            localStorage.setItem(`profilePicture_${userId}`, `http://localhost:5003${data.profilePicture}`);
+            // Save to sessionStorage with user-specific key
+            sessionStorage.setItem(`profilePicture_${userId}`, `http://localhost:5003${data.profilePicture}`);
 
             // Show success message
             showNotification('Profile picture updated successfully!', 'success');
@@ -87,15 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // Function to load user's profile picture
 async function loadUserProfilePicture(userId) {
     try {
-        // Try to get from localStorage first
-        const savedProfilePicture = localStorage.getItem(`profilePicture_${userId}`);
+        // Try to get from sessionStorage first
+        const savedProfilePicture = sessionStorage.getItem(`profilePicture_${userId}`);
         if (savedProfilePicture) {
             document.getElementById('profile-picture').src = savedProfilePicture;
             return;
         }
 
-        // If not in localStorage, fetch from backend
-        const token = localStorage.getItem("token") || localStorage.getItem("authToken");
+        // If not in sessionStorage, fetch from backend
+        const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
         const response = await fetch('http://localhost:5003/api/profile', {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -107,7 +107,7 @@ async function loadUserProfilePicture(userId) {
             if (data.profilePicture) {
                 const profilePictureUrl = `http://localhost:5003${data.profilePicture}`;
                 document.getElementById('profile-picture').src = profilePictureUrl;
-                localStorage.setItem(`profilePicture_${userId}`, profilePictureUrl);
+                sessionStorage  .setItem(`profilePicture_${userId}`, profilePictureUrl);
             }
         }
     } catch (error) {

@@ -124,7 +124,7 @@
 
     </style>
 </head>
-<body class="min-h-screen">
+<body class="hidden min-h-screen" onload="document.body.classList.remove('hidden')">
     <!-- 🔹 Navbar -->
     <nav class="fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
         <a href="index.html" class="flex items-center space-x-4">
@@ -372,7 +372,7 @@
     <script>
     async function subscribe(planType) {
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            const token = sessionStorage.getItem('token') || sessionStorage.getItem('authToken');
             if (!token) {
                 window.location.href = '/login.html';
                 return;
