@@ -19,6 +19,14 @@ import Analytics from "./models/Analytics.js";
 import MonthlyCO2 from "./models/MonthlyCO2.js";
 import { CO2_SAVINGS } from "../js/co2Calculator.js";
 import paymentRoutes from './routes/paymentRoutes.js';
+import { createMollieClient } from '@mollie/api-client';
+
+import checkSubscription from "./middleware/subscriptionMiddleware.js";
+
+
+const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
+
+
 
 dotenv.config(); // Load environment variables
 const app = express();
@@ -68,7 +76,7 @@ mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+    .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
 // ✅ Google OAuth2 Client Setup
 const oAuth2Client = new google.auth.OAuth2(
@@ -109,18 +117,34 @@ app.get("/oauthcallback", async (req, res) => {
 
         // Check if user exists in DB, create if not
         let user = await User.findOne({ email });
+
         if (!user) {
             console.log("👤 Creating new user with refresh token");
+
+            // 1. Create Mollie Customer
+            const mollieCustomer = await mollieClient.customers.create({
+                name: userInfo.data.name || "Google User",
+                email,
+            });
+
+            // 2. Create new User with trial & Mollie customer
             user = new User({
                 googleId: userInfo.data.id,
                 email,
-                refreshToken: tokens.refresh_token
+                refreshToken: tokens.refresh_token,
+                trialStart: new Date(),
+                trialEnds: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+                subscriptionStatus: "trial",
+                mollieCustomerId: mollieCustomer.id,
             });
+
+            console.log("✅ Mollie customer created:", mollieCustomer.id);
         } else {
             console.log("👤 Updating existing user's refresh token");
             user.refreshToken = tokens.refresh_token;
         }
-        
+
+
         await user.save();
         console.log("✅ User saved with refresh token:", {
             userId: user._id,
@@ -161,11 +185,44 @@ app.get("/api/ingredients", authenticate, async (req, res) => {
     }
 });
 
+app.get("/api/premium-stuff", authenticate, checkSubscription, async (req, res) => {
+    // User is authenticated AND has an active trial or subscription
+    res.json({ message: "🎉 Here's your premium content!" });
+});
+
+app.get("/api/debug/user", authenticate, async (req, res) => {
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({
+        email: user.email,
+        trialStart: user.trialStart,
+        trialEnds: user.trialEnds,
+        subscriptionStatus: user.subscriptionStatus
+    });
+});
+
+// ✅ Get Profile Info (used to show trial countdown on frontend)
+app.get("/api/profile", authenticate, async (req, res) => {
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+  
+    res.json({
+      email: user.email,
+      name: user.name,
+      subscriptionStatus: user.subscriptionStatus,
+      trialStart: user.trialStart,
+      trialEnds: user.trialEnds
+    });
+  });
+  
+
+
 // ✅ Add New Ingredient
 app.post("/api/ingredients", authenticate, async (req, res) => {
     try {
         const { name, category, expiryDate } = req.body;
-        
+
         // Validate required fields
         if (!name || !category || !expiryDate) {
             return res.status(400).json({ error: "Missing required fields" });
@@ -229,27 +286,27 @@ app.post("/api/ingredients", authenticate, async (req, res) => {
         if (user && user.refreshToken) {
             try {
                 console.log("🔄 Starting calendar event creation process...");
-                
+
                 // Set up OAuth2 client with user's refresh token
                 oAuth2Client.setCredentials({ refresh_token: user.refreshToken });
-                
+
                 // Create calendar event
                 const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
-                
+
                 // Calculate reminder date (2 days before expiry)
                 const reminderDate = new Date(ingredient.expiryDate);
                 reminderDate.setDate(reminderDate.getDate() - 2);
-                
+
                 // Format dates for display
                 const formattedExpiryDate = ingredient.expiryDate.toLocaleDateString();
                 const formattedReminderDate = reminderDate.toLocaleDateString();
-                
+
                 console.log('📅 Event details:', {
                     ingredient: ingredient.name,
                     expiryDate: formattedExpiryDate,
                     reminderDate: formattedReminderDate
                 });
-                
+
                 const event = {
                     summary: `⚠️ ${ingredient.name} is expiring soon!`,
                     description: `Your ${ingredient.name} (${ingredient.category}) will expire on ${formattedExpiryDate}.\n\nReminder set for: ${formattedReminderDate}`,
@@ -282,9 +339,9 @@ app.post("/api/ingredients", authenticate, async (req, res) => {
                     resource: event,
                     sendUpdates: 'all'
                 });
-                
+
                 console.log('✅ Calendar event created successfully:', response.data.htmlLink);
-                
+
                 // Store the calendar event ID in the ingredient
                 ingredient.calendarEventId = response.data.id;
                 await ingredient.save();
@@ -311,7 +368,7 @@ app.post("/api/ingredients", authenticate, async (req, res) => {
 app.put("/api/ingredients/:id", authenticate, async (req, res) => {
     try {
         const { name, category, expiryDate } = req.body;
-        
+
         // Validate required fields
         if (!name || !category || !expiryDate) {
             return res.status(400).json({ error: "Missing required fields" });
@@ -441,12 +498,12 @@ app.get("/api/co2-savings/monthly", authenticate, async (req, res) => {
         ingredients.forEach(ingredient => {
             const createdAt = new Date(ingredient.createdAt);
             const ingredientYear = createdAt.getFullYear();
-            
+
             // Only include in monthly breakdown if it's from the requested year
             if (ingredientYear === queryYear) {
                 const month = createdAt.getMonth();
                 const co2SavedForIngredient = CO2_SAVINGS[ingredient.category] || 0;
-                
+
                 monthlySavings[month].co2Saved += co2SavedForIngredient;
                 monthlySavings[month].itemsCount += 1;
                 monthlySavings[month].ingredients.push({

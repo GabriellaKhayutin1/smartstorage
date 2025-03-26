@@ -1,4 +1,36 @@
 import { CO2_SAVINGS } from "./co2Calculator.js";
+console.log("📍 Current URL:", window.location.href);
+console.log("🔑 Extracted token:", new URLSearchParams(window.location.search).get("token"));
+
+
+const token = new URLSearchParams(window.location.search).get("token");
+console.log("🔐 Token from URL:", token);
+
+
+if (token) {
+    localStorage.setItem("token", token); // ✅ Save token for future use
+
+    fetch("http://localhost:5003/api/profile", {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+        .then(res => res.json())
+        .then(user => {
+            if (user.subscriptionStatus === "trial") {
+                const endDate = new Date(user.trialEnds);
+                const today = new Date();
+                const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+                alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining before you need to subscribe.`);
+                // After showing the alert inside the .then block:
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+            }
+        })
+        .catch(err => console.error("❌ Failed to fetch profile info:", err));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadPantry();
 
@@ -89,7 +121,7 @@ async function addIngredient() {
         console.log("🔑 Using token:", token); // Debug log
         const response = await fetch("http://localhost:5003/api/ingredients", {
             method: "POST",
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}` // Make sure token is properly formatted
             },
@@ -156,7 +188,7 @@ async function updateIngredient(id) {
     try {
         let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, {
             method: "PUT",
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`  // Add token to the Authorization header
             },
@@ -194,7 +226,7 @@ async function removeIngredient(id) {
     try {
         let response = await fetch(`http://localhost:5003/api/ingredients/${id}`, {
             method: "DELETE",
-            headers: { 
+            headers: {
                 "Authorization": "Bearer " + token, // ✅ Attach token
                 "Content-Type": "application/json"
             }
@@ -223,7 +255,7 @@ async function loadPantry() {
     try {
         const response = await fetch("http://localhost:5003/api/ingredients", {
             method: "GET",
-            headers: { 
+            headers: {
                 "Authorization": "Bearer " + token, // ✅ Attach token
                 "Content-Type": "application/json"
             }
@@ -234,8 +266,8 @@ async function loadPantry() {
         const ingredients = await response.json();
         console.log("✅ Loaded Ingredients:", ingredients);
         updatePantryUI(ingredients);
-    // ✅ Calculate and display CO₂ savings
-    updateCO2Component(ingredients);
+        // ✅ Calculate and display CO₂ savings
+        updateCO2Component(ingredients);
     } catch (error) {
         console.error("❌ Error loading pantry:", error);
     }
