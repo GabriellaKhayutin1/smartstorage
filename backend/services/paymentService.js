@@ -11,7 +11,7 @@ const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 // Subscription plans
 export const SUBSCRIPTION_PLANS = {
     weekly: {
-        amount: 4.99,
+        amount: '4.99',
         description: 'Weekly Premium Subscription',
         interval: 'week'
     },
@@ -103,59 +103,50 @@ export const createSubscription = async (userId, planType, redirectUrl, webhookU
             throw new Error('Invalid subscription plan');
         }
 
-        console.log('Selected plan:', plan);
-
         // Get user from database
         const user = await User.findById(userId);
-        if (!user) {
-            throw new Error('User not found');
+        if (!user || !user.mollieCustomerId) {
+            throw new Error('User not found or Mollie customer ID missing');
         }
 
-        // Create a payment first
-        const payment = await mollieClient.payments.create({
+        // 🟡 Create subscription that starts after trial ends
+        const subscription = await mollieClient.customers_subscriptions.create({
+            customerId: user.mollieCustomerId,
             amount: {
-                currency: 'EUR',
+                currency: "EUR",
                 value: plan.amount.toFixed(2)
             },
+            interval: plan.interval, // e.g., "1 month"
             description: plan.description,
-            redirectUrl,
             webhookUrl,
-            methods: ['ideal', 'creditcard', 'paypal']
+            startDate: user.trialEnds.toISOString().split('T')[0], // ⏰ start after trial
         });
 
-        console.log('Created Mollie payment:', payment);
+        console.log('✅ Subscription created:', subscription);
 
-        // Create payment record in database
-        const paymentRecord = await Payment.create({
-            userId,
-            molliePaymentId: payment.id,
-            amount: plan.amount,
-            description: plan.description,
-            redirectUrl,
-            webhookUrl,
-            paymentMethod: payment.method,
-            status: payment.status,
-            isSubscription: true,
-            subscriptionInterval: plan.interval
-        });
-
-        console.log('Created payment record:', paymentRecord);
+        // (Optional) Save subscription info to DB if needed
+        // await Subscription.create({
+        //     userId,
+        //     mollieSubscriptionId: subscription.id,
+        //     planType,
+        //     status: subscription.status
+        // });
 
         return {
-            paymentId: payment.id,
-            checkoutUrl: payment._links.checkout.href,
-            paymentRecord
+            subscriptionId: subscription.id,
+            status: subscription.status,
+            startDate: subscription.startDate
         };
     } catch (error) {
-        console.error('Detailed error creating subscription:', {
+        console.error('❌ Error creating subscription:', {
             message: error.message,
             stack: error.stack,
             response: error.response?.body,
-            error: error
         });
         throw error;
     }
 };
+
 
 export const getPaymentStatus = async (paymentId) => {
     try {
