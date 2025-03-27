@@ -539,7 +539,7 @@ app.get('*', (req, res) => {
 
 // ✅ Server Setup
 const PORT = process.env.PORT || 5003;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on http://localhost:${PORT}`);
     console.log(`✅ Upload directory: ${path.join(process.cwd(), 'public/uploads/profile-pictures')}`);
 });
