@@ -7,6 +7,9 @@ import session from "express-session";
 import path from "path";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import authRoutes from "./routes/authRoutes.js";
 import leaderboardRoutes from "./routes/leaderboard.js";
@@ -22,7 +25,6 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import { createMollieClient } from '@mollie/api-client';
 
 import checkSubscription from "./middleware/subscriptionMiddleware.js";
-
 
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
@@ -528,6 +530,11 @@ app.get("/api/co2-savings/monthly", authenticate, async (req, res) => {
         console.error("❌ Error fetching monthly CO2 savings:", error);
         res.status(500).json({ error: "Failed to fetch monthly CO2 savings" });
     }
+});
+// ✅ With this:
+app.use(express.static(path.join(__dirname, '..'))); // Serve from root
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // ✅ Server Setup

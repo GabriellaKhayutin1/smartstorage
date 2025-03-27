@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: smartpantry-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: MONGO_URI
+        fromDatabase:
+          name: your-db-name
+          property: connectionString
+      - key: JWT_SECRET
+        value: your_jwt_secret
+      - key: SESSION_SECRET
+        value: your_session_secret
+      - key: GOOGLE_CLIENT_ID
+        value: your_google_client_id
+      - key: GOOGLE_CLIENT_SECRET
+        value: your_google_client_secret
+      - key: MOLLIE_API_KEY
+        value: your_mollie_api_key
+      - key: FRONTEND_URL
+        value: https://smartpantry.onrender.com
