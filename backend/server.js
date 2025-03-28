@@ -20,8 +20,7 @@ import Ingredient from "./models/Ingredient.js";
 import User from "./models/User.js";
 import Analytics from "./models/Analytics.js";
 import MonthlyCO2 from "./models/MonthlyCO2.js";
-import co2Calculator from "../js/co2Calculator.js";
-const { CO2_SAVINGS } = co2Calculator;
+import { CO2_SAVINGS } from "../js/constants/co2Calculator.js";
 import paymentRoutes from './routes/paymentRoutes.js';
 import { createMollieClient } from '@mollie/api-client';
 
