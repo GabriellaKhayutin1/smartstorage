@@ -3,10 +3,11 @@ services:
     name: smartpantry-backend
     env: node
     rootDir: backend
-    buildCommand: npm install
-    startCommand: node server.js
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
     envVars:
       - key: MONGO_URI
+      - value:mongodb+srv://gabriellakhayutin:eJFpHec5kdAcVifG@cluster0.rlyvv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
         fromDatabase:
           name: your-db-name
           property: connectionString
