@@ -229,13 +229,17 @@ app.post("/api/ingredients", authenticate, async (req, res) => {
         if (!name || !category || !expiryDate) {
             return res.status(400).json({ error: "Missing required fields" });
         }
+         // Calculate CO2 saved for this ingredient
+         const co2SavedForIngredient = CO2_SAVINGS[category] || 0;
+
 
         // Create new ingredient
         const ingredient = new Ingredient({
             userId: req.user.userId,
             name,
             category,
-            expiryDate: new Date(expiryDate)
+            expiryDate: new Date(expiryDate),
+            co2Saved: co2SavedForIngredient // ✅ Add this line
         });
 
         // Save to database
@@ -261,10 +265,6 @@ app.post("/api/ingredients", authenticate, async (req, res) => {
                 year
             });
         }
-
-        // Calculate CO2 saved for this ingredient
-        const co2SavedForIngredient = CO2_SAVINGS[category] || 0;
-
         // Update monthly totals
         monthlyCO2.co2Saved += co2SavedForIngredient;
         monthlyCO2.itemsCount += 1;

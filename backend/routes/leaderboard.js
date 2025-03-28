@@ -1,66 +1,61 @@
 import express from "express";
 import Ingredient from "../models/Ingredient.js"; 
 import User from "../models/User.js"; 
-import { CO2_SAVINGS } from "../../js/co2Calculator.js";
 
 const router = express.Router();
 
-
-// Helper function to extract name from email
-function extractName(email) {
-    if (!email) return 'Anonymous User';
-    const parts = email.split('@');
-    return parts[0] || 'Anonymous User';
-}
-
-// ✅ Default route to check if leaderboard API is working
 router.get("/", (req, res) => {
     res.json({ message: "Leaderboard API is working!" });
 });
 
-// 📌 Get Leaderboard (Least Expired Items)
-router.get("/waste-reduction", async (req, res) => {
-    try {
-        const today = new Date().toISOString(); 
-
-        const users = await User.find();
-        let leaderboard = [];
-
-        for (const user of users) {
-            const userId = user._id;
-
-            const expiredCount = await Ingredient.countDocuments({
-                userId,
-                expiryDate: { $lt: today }, 
-            });
-
-            const ingredients = await Ingredient.find({ userId });
-            let co2Saved = 0;
-            ingredients.forEach(item => {
-                co2Saved += CO2_SAVINGS[item.category] || 0; 
-            });
-
-            leaderboard.push({
-                userId: user._id,
-                email: user.email,
-                name: user.name || extractName(user.email),
-                expiredItems: expiredCount,
-                co2Saved,
-            });
+router.get('/waste-reduction', async (req, res) => {
+  try {
+    const leaderboard = await Ingredient.aggregate([
+      {
+        $group: {
+          _id: "$userId",
+          co2Saved: { $sum: "$co2Saved" }
         }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userInfo"
+        }
+      },
+      {
+        $unwind: "$userInfo"
+      },
+      {
+        $project: {
+          email: "$userInfo.email",
+          name: {
+            $ifNull: [
+              "$userInfo.name",
+              {
+                $substrBytes: [
+                  "$userInfo.email",
+                  0,
+                  { $indexOfBytes: ["$userInfo.email", "@"] }
+                ]
+              }
+            ]
+          },
+          co2Saved: 1
+        }
+      },
+      {
+        $sort: { co2Saved: -1 }
+      }
+    ]);
 
-        leaderboard.sort((a, b) => {
-            if (a.expiredItems === b.expiredItems) {
-                return b.co2Saved - a.co2Saved; 
-            }
-            return a.expiredItems - b.expiredItems;
-        });
-
-        res.json(leaderboard);
-    } catch (error) {
-        console.error("❌ Error fetching leaderboard:", error);
-        res.status(500).json({ error: "Server error" });
-    }
+    res.status(200).json(leaderboard);
+  } catch (error) {
+    console.error("❌ Error in leaderboard:", error);
+    res.status(500).json({ error: "Failed to fetch leaderboard data" });
+  }
 });
 
 export default router;
