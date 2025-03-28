@@ -1,7 +1,7 @@
 import express from "express";
 import Ingredient from "../models/Ingredient.js"; 
 import User from "../models/User.js"; 
-import { CO2_SAVINGS } from "../../js/constants/co2Calculator.js";
+import { CO2_SAVINGS } from "../constants/co2Calculator.js";
 
 
 
