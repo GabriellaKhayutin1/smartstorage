@@ -2,13 +2,12 @@ services:
   - type: web
     name: smartpantry-backend
     env: node
-    buildCommand: npm install
-    startCommand: node server.js
+    rootDir: backend
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
     envVars:
       - key: MONGO_URI
-        fromDatabase:
-          name: your-db-name
-          property: connectionString
+        value: mongodb+srv://gabriellakhayutin:eJFpHec5kdAcVifG@cluster0.rlyvv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - key: JWT_SECRET
         value: your_jwt_secret
       - key: SESSION_SECRET
