@@ -21,7 +21,7 @@ if (urlToken) {
         const trialExpired = user.subscriptionStatus === "trial" && today > endDate;
       
         if (user.subscriptionStatus === "inactive" || trialExpired) {
-            window.location.href = "/subscribe.html";
+            window.location.href = "/subscribe_payment.html";
           
         } else {
           alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining.`);
