@@ -168,7 +168,7 @@ app.get("/oauthcallback", async (req, res) => {
             maxAge: 3600 * 1000
         });
 
-        res.redirect(`http://127.0.0.1:5502/index.html?token=${jwtToken}`);
+        res.redirect(`https://smartstorage-k0v4.onrender.com/index.html?token=${jwtToken}`);
     } catch (error) {
         console.error("❌ OAuth Callback Error:", error);
         res.status(500).send("Authentication failed.");
