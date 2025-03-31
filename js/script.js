@@ -21,10 +21,8 @@ if (urlToken) {
         const trialExpired = user.subscriptionStatus === "trial" && today > endDate;
       
         if (user.subscriptionStatus === "inactive" || trialExpired) {
-          const banner = document.createElement("div");
-          banner.innerText = "🚨 Your free trial has ended! Subscribe to unlock full features.";
-          banner.className = "bg-red-100 text-red-700 p-4 text-center font-bold fixed top-0 left-0 w-full z-50";
-          document.body.prepend(banner);
+            window.location.href = "/subscribe.html";
+          
         } else {
           alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining.`);
         }
