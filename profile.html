@@ -164,7 +164,7 @@
     </style>
 </head>
 
-<body class="hidden min-h-screen">
+<body class="hidden min-h-screen" onload="document.body.classList.remove('hidden')">
     <!-- 🔹 Navbar -->
     <nav
         class="fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
@@ -426,17 +426,17 @@
                     }
 
                     const response = await fetch('http://localhost:5003/api/payments/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        planType,
-                        redirectUrl: `${window.location.origin}/payment-status.html`,
-                        webhookUrl: 'https://smartstorage-k0v4.onrender.com/api/payments/webhook'
-                    })
-                });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            planType,
+                            redirectUrl: `${window.location.origin}/payment-status.html`,
+webhookUrl: 'https://smartstorage-k0v4.onrender.com/api/payments/webhook' // if deployed backend
+                        })
+                    });
 
                     if (!response.ok) {
                         throw new Error('Failed to create subscription');
