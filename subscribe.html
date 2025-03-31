@@ -1,24 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-    <script defer src="js/subscribe.js"></script>
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Subscribe | SmartStorage</title>
-  <script defer src="subscribe.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center space-y-6">
-    <h1 class="text-3xl font-bold text-gray-800">🔒 Unlock Full Access</h1>
-    <p class="text-gray-600">Your trial has ended. Subscribe now to continue using all features.</p>
-    
-    <button id="subscribeBtn" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl shadow transition">
-      Subscribe for €5/month
-    </button>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <script defer src="js/subscribe.js"></script>
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: linear-gradient(to bottom right, #e7f6e7, #cceacc);
+    }
 
-    <div id="status" class="text-sm text-gray-500 mt-4 hidden">Redirecting to payment...</div>
+    .glow-button {
+      transition: 0.3s;
+      box-shadow: 0 0 0 rgba(130, 200, 120, 0.6);
+    }
+
+    .glow-button:hover {
+      box-shadow: 0 0 15px rgba(130, 200, 120, 0.8);
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white shadow-2xl rounded-3xl p-10 max-w-md w-full text-center border border-green-100">
+    <div class="space-y-5">
+      <h1 class="text-3xl font-bold text-green-700">🥑 SmartStorage Pro</h1>
+      <p class="text-gray-600 text-lg">Unlock full access to premium features with a monthly subscription.</p>
+
+      <ul class="text-left text-gray-700 space-y-2 text-sm">
+        <li>✔️ Unlimited ingredient tracking</li>
+        <li>✔️ CO₂ savings history & analytics</li>
+        <li>✔️ Expiry alerts synced with Google Calendar</li>
+        <li>✔️ Leaderboards, forums & more</li>
+      </ul>
+
+      <button
+        id="subscribeBtn"
+        class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold glow-button hover:bg-green-700"
+      >
+        Subscribe for €5/month
+      </button>
+
+      <div id="status" class="text-sm text-gray-500 mt-4 hidden">Redirecting to payment...</div>
+    </div>
   </div>
 </body>
 </html>
