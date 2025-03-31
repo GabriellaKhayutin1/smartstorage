@@ -1,8 +1,9 @@
 // ✅ Determine Backend API URL dynamically
 const isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
-const API_BASE_URL = isLocal
+window.API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
   ? "http://localhost:5003"
   : "https://smartstorage-k0v4.onrender.com";
+
 
 // ✅ Check if user is authenticated
 function checkAuth() {
@@ -50,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("login-password").value;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        const response = await fetch(`${window.API_BASE_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -77,7 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("register-password").value;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        const response = await fetch(`${window.API_BASE_URL}/api/auth/register`, {
+            
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
