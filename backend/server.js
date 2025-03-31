@@ -84,7 +84,7 @@ mongoose.connect(process.env.MONGO_URI, {
 const oAuth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    "http://localhost:5003/oauthcallback"
+    "https://smartstorage-k0v4.onrender.com/oauthcallback"
 );
 
 // ✅ Google OAuth Flow for Login
