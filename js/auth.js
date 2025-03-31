@@ -1,5 +1,4 @@
 // ✅ Determine Backend API URL dynamically
-const isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
 window.API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
   ? "http://localhost:5003"
   : "https://smartstorage-k0v4.onrender.com";
