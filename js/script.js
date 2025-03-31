@@ -15,14 +15,23 @@ if (urlToken) {
   })
     .then((res) => res.json())
     .then((user) => {
-      if (user.subscriptionStatus === "trial") {
-        const endDate = new Date(user.trialEnds);
-        const today = new Date();
-        const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-        alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining.`);
-      }
-      // Clean URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+        if (user.subscriptionStatus === "trial") {
+          const endDate = new Date(user.trialEnds);
+          const today = new Date();
+          const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+          alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining.`);
+        }
+  
+        if (user.subscriptionStatus === "inactive" || trialExpired) {
+          const banner = document.createElement("div");
+          banner.innerText = "🚨 Your free trial has ended! Subscribe to unlock full features.";
+          banner.className = "bg-red-100 text-red-700 p-4 text-center font-bold fixed top-0 left-0 w-full z-50";
+          document.body.prepend(banner);
+        } else {
+          alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining.`);
+        }
+  
+        window.history.replaceState({}, document.title, window.location.pathname);
     })
     .catch((err) => console.error("❌ Failed to fetch profile info:", err));
 }
