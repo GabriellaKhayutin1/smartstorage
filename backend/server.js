@@ -34,12 +34,23 @@ dotenv.config(); // Load environment variables
 const app = express();
 
 // ✅ CORS Configuration (Fixing Issues)
-const corsOptions = {
-    origin: "http://127.0.0.1:5502", // ✅ Allow requests from frontend
-    credentials: true, // ✅ Allow cookies & authentication
+const allowedOrigins = [
+    "http://127.0.0.1:5502",
+    "https://smartstorage-k0v4.onrender.com"
+  ];
+  
+  const corsOptions = {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
-};
+  };
 app.use(cors(corsOptions));
 
 // ✅ Explicitly Handle Preflight Requests
@@ -80,11 +91,16 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log("✅ Connected to MongoDB"))
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-// ✅ Google OAuth2 Client Setup
+
+
+const redirectUri = process.env.NODE_ENV === 'production'
+  ? "https://smartstorage-k0v4.onrender.com/oauthcallback"
+  : "http://localhost:5003/oauthcallback";
+
 const oAuth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    "https://smartstorage-k0v4.onrender.com/oauthcallback"
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  redirectUri
 );
 
 // ✅ Google OAuth Flow for Login
@@ -168,7 +184,11 @@ app.get("/oauthcallback", async (req, res) => {
             maxAge: 3600 * 1000
         });
 
-        res.redirect(`https://smartstorage-k0v4.onrender.com/index.html?token=${jwtToken}`);
+        const frontendRedirect = process.env.NODE_ENV === 'production'
+  ? "https://smartstorage-k0v4.onrender.com/index.html"
+  : "http://127.0.0.1:5502/index.html";
+
+res.redirect(`${frontendRedirect}?token=${jwtToken}`);
     } catch (error) {
         console.error("❌ OAuth Callback Error:", error);
         res.status(500).send("Authentication failed.");
