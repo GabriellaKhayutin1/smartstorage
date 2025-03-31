@@ -1,6 +1,10 @@
 import { CO2_SAVINGS } from "./co2Calculator.js";
 
-const API_BASE_URL = 'http://localhost:5003';
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE_URL = isLocal
+  ? "http://localhost:5003"
+  : "https://smartstorage-k0v4.onrender.com";
+
 
 function calculateCO2Savings(ingredients) {
     return ingredients.reduce((total, item) => total + (CO2_SAVINGS[item.category] || 0), 0);
