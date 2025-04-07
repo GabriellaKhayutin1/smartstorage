@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <link rel="shortcut icon" href="images/logo.png" type="image/png">
-<link rel="apple-touch-icon" href="images/logo.png">
-
+    <link rel="apple-touch-icon" href="images/logo.png">
 
 <head>
     <meta charset="UTF-8">
@@ -30,43 +29,57 @@
     </style>
 </head>
 
-<body class="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-
-    <!-- ✅ Background Image with Overlay -->
-    <div class="absolute inset-0 bg-cover bg-center bg-fixed" style="background-image: url('/images/pexels-goumbik-616401.jpg');">
-        <div class="absolute inset-0 bg-gradient-to-br from-black/70 to-black/50"></div>
+<body class="relative min-h-screen flex flex-col items-center justify-center py-12 px-4">
+    <!-- Background -->
+    <div class="fixed inset-0 -z-10">
+        <img src="/images/pexels-goumbik-616401.jpg" alt="Background" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/60"></div>
     </div>
 
-    <!-- ✅ Login Card -->
-    <div class="relative z-10 w-full max-w-md mx-4 p-8 glass-effect rounded-2xl shadow-2xl hover-scale">
-        
-        <!-- ✅ Logo with Animation -->
-        <div class="flex justify-center mb-8 transform hover:scale-105 transition-transform duration-300">
-            <img src="/images/logo.png" alt="Smart Storage Logo" class="w-28 h-28 drop-shadow-lg">
+    <!-- Main Content -->
+    <div class="w-full max-w-md">
+        <div class="glass-effect rounded-2xl shadow-2xl p-8 hover-scale">
+            <!-- Logo -->
+            <div class="flex justify-center mb-8 transform hover:scale-105 transition-transform duration-300">
+                <img src="/images/logo.png" alt="Smart Storage Logo" class="w-28 h-28 drop-shadow-lg">
+            </div>
+
+            <h2 class="text-4xl font-bold text-center text-gray-900 mb-2">Welcome Back</h2>
+            <p class="text-center text-gray-600 mb-8">Sign in to access your smart storage</p>
+
+            <!-- Google Login Button -->
+            <a href="https://smartstorage-k0v4.onrender.com/auth/google"       
+               class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 py-4 px-6 text-gray-700 text-lg rounded-xl transition-all duration-300 hover:bg-gray-50 hover:border-gray-300 active:scale-95 shadow-lg hover:shadow-xl font-semibold group">
+                <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300">
+                <span class="group-hover:text-gray-900 transition-colors duration-300">Sign in with Google</span>
+            </a>
+
+            <!-- Terms -->
+            <p class="mt-8 text-center text-sm text-gray-500">
+                By signing in, you agree to our 
+                <a href="terms-of-service.html" class="text-green-600 hover:text-green-700 font-medium">Terms of Service</a> and 
+                <a href="privacy-policy.html" class="text-green-600 hover:text-green-700 font-medium">Privacy Policy</a>
+                <a href="unsubscribing-policy.html" class="text-green-600 hover:text-green-700 font-medium">Unsubscribing policy</a>
+            </p>
         </div>
-
-        <h2 class="text-4xl font-bold text-center text-gray-900 mb-2">Welcome Back</h2>
-        <p class="text-center text-gray-600 mb-8">Sign in to access your smart storage</p>
-
-        <!-- ✅ Google Login Button -->
-        <a href="https://smartstorage-k0v4.onrender.com/auth/google"       
-           class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 py-4 px-6 text-gray-700 text-lg rounded-xl transition-all duration-300 hover:bg-gray-50 hover:border-gray-300 active:scale-95 shadow-lg hover:shadow-xl font-semibold group">
-            <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300">
-            <span class="group-hover:text-gray-900 transition-colors duration-300">Sign in with Google</span>
-        </a>
-
-        <!-- ✅ Footer Text -->
-        <p class="mt-8 text-center text-sm text-gray-500">
-            By signing in, you agree to our 
-            <a href="terms-of-service.html" class="text-green-600 hover:text-green-700 font-medium">Terms of Service</a> and 
-            <a href="privacy-policy.html" class="text-green-600 hover:text-green-700 font-medium">Privacy Policy</a>
-            <a href="unsubscribing-policy.html" class="text-green-600 hover:text-green-700 font-medium">Unsubscribing policy</a>
-        </p>
     </div>
 
-    <!-- ✅ Decorative Elements -->
-    <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-gray-900 to-transparent"></div>
-    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-gray-900 to-transparent"></div>
+    <!-- Company Information -->
+    <div class="fixed bottom-0 left-0 right-0 bg-emerald-900/30 backdrop-blur-sm text-white/80 text-xs py-3 px-6">
+        <div class="max-w-screen-lg mx-auto flex flex-wrap justify-between items-center gap-x-4">
+            <div class="flex items-center gap-x-4">
+                <span>Stichting Jonge Honden</span>
+                <span>•</span>
+                <span>Kleiwerd 42, 9746 CV Groningen</span>
+            </div>
+            <div class="flex items-center gap-x-4">
+                <span>VAT: NL82151738B01</span>
+                <span>•</span>
+                <span>KvK: 01166795</span>
+                <span>•</span>
+                <span><a href="#" class="hover:text-white">Contact</a> | <a href="mailto:info@smartstorage.nl" class="hover:text-white">info@smartstorage.nl</a></span>
+            </div>
+        </div>
+    </div>
 </body>
-
 </html>
