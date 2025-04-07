@@ -5,61 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Subscribe | SmartStorage</title>
     <script defer src="js/subscribe.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="css/output.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       body {
         font-family: 'Outfit', sans-serif;
-        background-color: #f3f4f6;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      }
+      .card-shadow {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .feature-icon {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+      .feature-icon.included {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+      }
+      .feature-icon.excluded {
+        background: #f3f4f6;
+        color: #9ca3af;
       }
     </style>
   </head>
   
 <body class="min-h-screen flex items-center justify-center px-4 py-10">
-  <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full text-center overflow-hidden">
+  <div class="bg-white rounded-2xl card-shadow max-w-sm w-full text-center overflow-hidden">
     
     <!-- Plan Label -->
-    <div class="bg-emerald-400 text-white py-3 font-bold text-sm tracking-wide uppercase">
-      Standard Plan
+    <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 text-white py-4">
+      <h2 class="font-bold text-lg tracking-wide">STANDARD PLAN</h2>
+      <p class="text-emerald-50 text-sm">Perfect for personal use</p>
     </div>
 
     <!-- Price -->
-    <div class="py-6">
-      <p class="text-4xl font-extrabold text-emerald-500">€5</p>
-      <p class="text-sm text-gray-500 mt-1">per month</p>
+    <div class="py-6 px-6 bg-gradient-to-b from-white to-emerald-50/30">
+      <div class="flex items-center justify-center gap-1">
+        <span class="text-2xl font-medium text-emerald-600">€</span>
+        <span class="text-5xl font-bold text-emerald-600">5</span>
+      </div>
+      <p class="text-emerald-600/80 mt-1">per month</p>
+      <div class="mt-3 text-xs bg-emerald-100/50 py-1 px-3 rounded-full inline-block text-emerald-600">
+        Save 20% with annual billing
+      </div>
     </div>
 
     <!-- Features -->
-    <ul class="text-sm text-left px-10 space-y-3 text-gray-700 mb-8">
-      <li class="flex items-center gap-2">
-        <span class="text-emerald-500 font-bold">✔</span> Unlimited pantry items
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-emerald-500 font-bold">✔</span> Expiry calendar sync
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-emerald-500 font-bold">✔</span> Full CO₂ analytics
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-emerald-500 font-bold">✔</span> Leaderboard access
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-gray-400 font-bold">✘</span> Meal planning
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-gray-400 font-bold">✘</span> Team pantry sharing
-      </li>
-    </ul>
+    <div class="px-8 py-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Everything You Need</h3>
+      <ul class="text-sm text-left space-y-3">
+        <li class="flex items-center gap-3">
+          <span class="feature-icon included">✓</span>
+          <div>
+            <span class="font-medium text-gray-800">Unlimited pantry items</span>
+            <p class="text-xs text-gray-500">Track as many items as you need</p>
+          </div>
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="feature-icon included">✓</span>
+          <div>
+            <span class="font-medium text-gray-800">Expiry calendar sync</span>
+            <p class="text-xs text-gray-500">Never miss an expiration date</p>
+          </div>
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="feature-icon included">✓</span>
+          <div>
+            <span class="font-medium text-gray-800">Full CO₂ analytics</span>
+            <p class="text-xs text-gray-500">Track your environmental impact</p>
+          </div>
+        </li>
+        <li class="flex items-center gap-3">
+          <span class="feature-icon included">✓</span>
+          <div>
+            <span class="font-medium text-gray-800">Leaderboard access</span>
+            <p class="text-xs text-gray-500">Compete with other users</p>
+          </div>
+        </li>
+        </li>
+      </ul>
+    </div>
 
     <!-- Button -->
-    <div class="px-8 pb-6">
+    <div class="px-8 pb-8">
       <button
         id="subscribeBtn"
-        class="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold w-full py-3 rounded-xl transition"
+        class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold w-full py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
       >
-        Subscribe
+        Get Started Now
       </button>
-      <div id="status" class="text-xs text-gray-500 mt-3 hidden">Redirecting to payment...</div>
+      <div id="status" class="text-xs text-gray-500 mt-3 hidden">Setting up your subscription...</div>
+      <div class="flex items-center justify-center gap-2 mt-4">
+        <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <p class="text-xs text-gray-500">
+          Secure payment powered by <span class="font-medium">Stripe</span>
+        </p>
+      </div>
     </div>
   </div>
 </body>
