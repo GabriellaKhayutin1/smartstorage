@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./profile.html",
     "./tips.html",
+    "./subscribe_payment.html",
     "./js/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
