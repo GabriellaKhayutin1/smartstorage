@@ -1,363 +1,871 @@
 <!DOCTYPE html>
 <html lang="en">
-      
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Pantry - Smart Food Management Solution</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-green': '#22C55E',
+                        'brand-light': '#DCFCE7',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="css/style.css">
     <link rel="shortcut icon" href="images/logo.png" type="image/png">
     <link rel="apple-touch-icon" href="images/logo.png">
-    <script>
-        // Check if user is already logged in
-        function checkAuth() {
-            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
-            if (!token) return false;
+    <style>
+        .bg-pattern {
+            background-color: #DCFCE7;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='%2322C55E' fill-opacity='0.1'/%3E%3C/svg%3E");
+            background-size: 30px 30px;
+        }
+        .full-width-section {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .floating-icon {
+            position: absolute;
+            opacity: 0.2;
+            animation: float 6s ease-in-out infinite;
+        }
 
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const expiration = payload.exp * 1000;
-                if (Date.now() >= expiration) {
-                    sessionStorage.removeItem("token");
-                    sessionStorage.removeItem("authToken");
-                    return false;
-                }
-                return true;
-            } catch (err) {
-                console.error("Invalid token:", err);
-                return false;
+        .icon-1 { top: 15%; left: 20%; animation-delay: 0s; transform: rotate(-15deg); }
+        .icon-2 { top: 25%; right: 30%; animation-delay: 0.5s; transform: rotate(10deg); }
+        .icon-3 { top: 45%; left: 40%; animation-delay: 1s; transform: rotate(-5deg); }
+        .icon-4 { top: 35%; right: 20%; animation-delay: 1.5s; transform: rotate(15deg); }
+        .icon-5 { top: 60%; left: 25%; animation-delay: 2s; transform: rotate(20deg); }
+        .icon-6 { top: 20%; right: 45%; animation-delay: 2.5s; transform: rotate(-10deg); }
+        .icon-7 { top: 70%; right: 35%; animation-delay: 3s; transform: rotate(25deg); }
+        .icon-8 { top: 30%; left: 35%; animation-delay: 3.5s; transform: rotate(-20deg); }
+        .icon-9 { top: 55%; right: 15%; animation-delay: 4s; transform: rotate(8deg); }
+        .icon-10 { top: 40%; left: 15%; animation-delay: 4.5s; transform: rotate(-12deg); }
+        .icon-11 { top: 25%; left: 45%; animation-delay: 5s; transform: rotate(18deg); }
+        .icon-12 { top: 65%; right: 25%; animation-delay: 5.5s; transform: rotate(-8deg); }
+        .icon-13 { top: 10%; left: 30%; animation-delay: 0.2s; transform: rotate(12deg); }
+        .icon-14 { top: 50%; right: 40%; animation-delay: 0.7s; transform: rotate(-22deg); }
+        .icon-15 { top: 75%; left: 45%; animation-delay: 1.2s; transform: rotate(16deg); }
+        .icon-16 { top: 15%; right: 25%; animation-delay: 1.7s; transform: rotate(-14deg); }
+        .icon-17 { top: 45%; left: 10%; animation-delay: 2.2s; transform: rotate(22deg); }
+        .icon-18 { top: 80%; right: 30%; animation-delay: 2.7s; transform: rotate(-18deg); }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(var(--rotation, 0deg));
+            }
+            50% {
+                transform: translateY(-40px) rotate(var(--rotation, 0deg));
             }
         }
 
-        // Redirect to dashboard if already logged in
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkAuth()) {
-                window.location.href = "dashboard.html";
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding-top: 8rem;
+        }
+
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        .nav-link {
+            color: #374151;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #22C55E;
+        }
+
+        .btn-primary {
+            background: #22C55E;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1EA34D;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #111827;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #F9FAFB;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #22C55E;
+        }
+
+        .logo img {
+            width: 2.5rem;
+            height: 2.5rem;
+            object-fit: cover;
+            border-radius: 9999px;
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-        });
-    </script>
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Animated Elements */
+        .hero-title {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-description {
+            animation: fadeInUp 1s ease-out 0.2s backwards;
+        }
+
+        .hero-buttons {
+            animation: fadeInUp 1s ease-out 0.4s backwards;
+        }
+
+        .feature-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease-out;
+        }
+
+        .feature-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.03);
+        }
+
+        .pricing-card {
+            animation: scaleIn 0.8s ease-out;
+        }
+
+        .testimonial-card {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.6s ease-out;
+        }
+
+        .testimonial-card.animate {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .btn-primary, .btn-secondary {
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #22C55E;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .logo {
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="font-sans overflow-x-hidden">
     <!-- Navigation -->
-    <nav class="fixed top-0 z-50 w-full bg-white shadow-md">
-        <div class="container mx-auto px-4 sm:px-6 py-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <img src="images/logo.png" alt="Logo" class="h-10 w-10 sm:h-12 sm:w-12 rounded-full">
-                        <span class="ml-3 text-xl sm:text-2xl font-bold text-green-900">Smart Pantry</span>
-                    </div>
-                    <!-- Mobile menu button -->
-                    <button type="button" class="sm:hidden text-gray-600 hover:text-green-900" onclick="toggleMobileMenu()">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+    <nav class="fixed top-0 z-50 w-full bg-white/90 backdrop-blur-sm">
+        <div class="content-container py-4">
+            <div class="flex justify-between items-center">
+                <a href="/" class="logo flex items-center space-x-2">
+                    <img src="images/logo.png" alt="Smart Pantry Logo" class="w-10 h-10">
+                    <span class="text-xl font-semibold text-brand-green">Smart Pantry</span>
+                </a>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="#features" class="nav-link">About Us</a>
+                    <a href="mailto:info@smartstorage.nl" class="nav-link">Contact</a>
+                    <a href="#pricing" class="nav-link">Subscription</a>
                 </div>
-                <div id="mobileMenu" class="hidden sm:flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-                    <a href="#about" class="text-gray-600 hover:text-green-900">About</a>
-                    <a href="#contact" class="text-gray-600 hover:text-green-900">Contact</a>
-                    <a href="#subscription" class="text-gray-600 hover:text-green-900">Pricing</a>
-                    <a href="login.html" class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition w-full sm:w-auto text-center">Log In/Sign Up</a>
+
+                <div class="hidden md:flex items-center">
+                    <a href="/login.html?signup=true" class="btn-primary">Sign Up</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuButton" class="md:hidden p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-green">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="menuIcon" class="block" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path id="closeIcon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-100 shadow-lg">
+            <div class="content-container py-4">
+                <div class="flex flex-col space-y-4">
+                    <a href="/" class="text-gray-600 hover:text-brand-green px-4 py-2 rounded-lg hover:bg-gray-50">Home</a>
+                    <a href="#features" class="text-gray-600 hover:text-brand-green px-4 py-2 rounded-lg hover:bg-gray-50">About Us</a>
+                    <a href="mailto:info@smartstorage.nl" class="text-gray-600 hover:text-brand-green px-4 py-2 rounded-lg hover:bg-gray-50">Contact</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-brand-green px-4 py-2 rounded-lg hover:bg-gray-50">Subscription</a>
+                    <div class="pt-2">
+                        <a href="/login.html?signup=true" class="block w-full bg-brand-green text-white text-center py-3 rounded-lg hover:bg-green-600 transition-colors">
+                            Sign Up
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="pt-32 pb-20 bg-gradient-to-b from-green-50 to-white w-full">
-        <div class="container mx-auto px-4 sm:px-6 text-center max-w-6xl">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 sm:mb-8 leading-tight">
-                Smart Food Management for Modern Businesses
-            </h1>
-            <p class="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-12 max-w-4xl mx-auto px-4">
-                Optimize your food inventory, reduce waste, and save money with our intelligent pantry management system.
-            </p>
-            <a href="login.html?signup=true" class="inline-flex items-center bg-green-600 text-white px-6 sm:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-green-700 transition-all transform hover:scale-105 duration-300 shadow-lg hover:shadow-xl">
-                Get Started 7 Days Free
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
-            </a>
+    <section class="min-h-screen flex items-center bg-gradient-to-b from-[#DCFCE7] via-[#DCFCE7] to-white full-width-section">
+        <!-- Carrot -->
+        <div class="floating-icon icon-1">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="#FF6B6B">
+                <path d="M12 2C7.58 2 4 5.58 4 10c0 7 8 12 8 12s8-5 8-12c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+            </svg>
         </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-16 sm:py-20 bg-white">
-        <div class="container mx-auto px-4 sm:px-6">
-            <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-8 sm:mb-12">About Us</h2>
-            <div class="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
-                <div class="order-2 md:order-1">
-                    <h3 class="text-xl sm:text-2xl font-semibold text-green-900 mb-4">Our Mission</h3>
-                    <p class="text-gray-600 mb-6">
-                        At Smart Pantry, we're dedicated to revolutionizing food management for businesses. Our platform helps companies optimize their inventory, reduce waste, and make data-driven decisions about their food resources.
-                    </p>
-                    <h3 class="text-xl sm:text-2xl font-semibold text-green-900 mb-4">Why Choose Us</h3>
-                    <ul class="space-y-3 text-gray-600">
-                        <li>✓ Real-time inventory tracking</li>
-                        <li>✓ Smart expiry date management</li>
-                        <li>✓ Waste reduction analytics</li>
-                        <li>✓ Cost optimization tools</li>
-                    </ul>
-                </div>
-                <div class="order-1 md:order-2 bg-green-50 p-4 sm:p-8 rounded-lg">
-                    <img src="images/logo.png" alt="Smart Pantry Logo" class="rounded-lg shadow-lg w-full">
-                </div>
-            </div>
+        <!-- Fork -->
+        <div class="floating-icon icon-2">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="#4ECDC4">
+                <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+            </svg>
         </div>
-    </section>
-
-    <!-- Subscription Section -->
-    <section id="subscription" class="py-16 sm:py-20 bg-gray-50">
-        <div class="container mx-auto px-4 sm:px-6">
-            <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-4">Simple Pricing</h2>
-            <p class="text-center text-gray-600 mb-8 sm:mb-12 max-w-2xl mx-auto px-4">Start managing your food inventory efficiently with our affordable plan. No hidden fees, just straightforward pricing.</p>
-            
-            <div class="max-w-md mx-auto">
-                <div class="bg-white rounded-3xl shadow-xl overflow-hidden transform hover:scale-105 transition-transform duration-300">
-                    <!-- Header -->
-                    <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 sm:px-8 py-6 text-white">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-xl sm:text-2xl font-bold">Smart Pantry Pro</h3>
-                            <div class="bg-white/20 rounded-full px-3 sm:px-4 py-1 text-sm">
-                                Best Value
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <span class="text-4xl sm:text-5xl font-bold">€5</span>
-                            <span class="text-lg sm:text-xl">/month</span>
-                        </div>
-                    </div>
-
-                    <!-- Features -->
-                    <div class="px-6 sm:px-8 py-6 sm:py-8">
-                        <ul class="space-y-4">
-                            <li class="flex items-center space-x-3">
-                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span class="text-gray-700">Full inventory management</span>
-                            </li>
-                            <li class="flex items-center space-x-3">
-                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span class="text-gray-700">Smart expiry tracking</span>
-                            </li>
-                            <li class="flex items-center space-x-3">
-                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span class="text-gray-700">Waste reduction analytics</span>
-                            </li>
-                            <li class="flex items-center space-x-3">
-                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span class="text-gray-700">Email support</span>
-                            </li>
-                            <li class="flex items-center space-x-3">
-                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span class="text-gray-700">Mobile app access</span>
-                            </li>
-                        </ul>
-
-                        <!-- Action Button -->
-                        <div class="mt-8">
-                            <a href="login.html?signup=true" 
-                               class="block w-full bg-gradient-to-r from-green-500 to-green-600 text-white text-center px-4 sm:px-6 py-3 rounded-xl text-base sm:text-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
-                                Get Started Now
-                            </a>
-                            <p class="text-center text-sm text-gray-500 mt-4">
-                                No credit card required • 7-day free trial
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Trust Indicators -->
-                <div class="mt-8 grid grid-cols-3 gap-2 sm:gap-4 text-center">
-                    <div class="p-2 sm:p-4">
-                        <div class="text-green-600 flex justify-center mb-2">
-                            <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-xs sm:text-sm font-semibold text-gray-700">Secure Payment</h4>
-                    </div>
-                    <div class="p-2 sm:p-4">
-                        <div class="text-green-600 flex justify-center mb-2">
-                            <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </div>
-                        <h4 class="text-xs sm:text-sm font-semibold text-gray-700">Cancel Anytime</h4>
-                    </div>
-                    <div class="p-2 sm:p-4">
-                        <div class="text-green-600 flex justify-center mb-2">
-                            <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-xs sm:text-sm font-semibold text-gray-700">24/7 Support</h4>
-                    </div>
-                </div>
-            </div>
+        <!-- Broccoli -->
+        <div class="floating-icon icon-3">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="#22C55E">
+                <path d="M7 10c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm0 10v2h10v-2H7z"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
         </div>
-    </section>
+        <!-- Spoon -->
+        <div class="floating-icon icon-4">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFD93D">
+                <path d="M14.88 11.53l-1.41 1.41L18.59 18H5.41l5.12-5.06-1.41-1.41-7.12 7.06V22h18v-3.41z"/>
+            </svg>
+        </div>
+        <!-- Tomato -->
+        <div class="floating-icon icon-5">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="#FF6B6B">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                <circle cx="12" cy="12" r="5"/>
+            </svg>
+        </div>
+        <!-- Knife -->
+        <div class="floating-icon icon-6">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="#6C5CE7">
+                <path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/>
+            </svg>
+        </div>
+        <!-- Apple -->
+        <div class="floating-icon icon-7">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#FF6B6B">
+                <path d="M18.71 3.29a1 1 0 0 0-1.42 0L12 8.59l-5.29-5.3a1 1 0 0 0-1.42 1.42L10.59 10l-5.3 5.29a1 1 0 0 0 1.42 1.42L12 11.41l5.29 5.3a1 1 0 0 0 1.42-1.42L13.41 10l5.3-5.29a1 1 0 0 0 0-1.42z"/>
+            </svg>
+        </div>
+        <!-- Bowl -->
+        <div class="floating-icon icon-8">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="#4ECDC4">
+                <path d="M2 19h20v2H2v-2zm9-11h2v8h-2V8zM5 8h2v8H5V8zm12 0h2v8h-2V8zM2 3v3h20V3H2z"/>
+            </svg>
+        </div>
+        <!-- Plate -->
+        <div class="floating-icon icon-9">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="#FFD93D">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6" fill="white"/>
+            </svg>
+        </div>
+        <!-- Pepper -->
+        <div class="floating-icon icon-10">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="#FF6B6B">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+            </svg>
+        </div>
+        <!-- Whisk -->
+        <div class="floating-icon icon-11">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="#6C5CE7">
+                <path d="M16.24 11.51l1.41-1.41-4.24-4.24-1.41 1.41 4.24 4.24zm4.76-7.42l-2.83-2.83c-.2-.19-.45-.29-.71-.29-.26 0-.51.1-.71.29L2.29 15.71c-.39.39-.39 1.02 0 1.41l2.83 2.83c.2.19.45.29.71.29.26 0 .51-.1.71-.29l14.46-14.46c.38-.39.38-1.03-.01-1.41zM6.12 21.12l-2.83-2.83 14.46-14.46 2.83 2.83-14.46 14.46z"/>
+            </svg>
+        </div>
+        <!-- Pan -->
+        <div class="floating-icon icon-12">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="#4ECDC4">
+                <path d="M2 19h20v2H2v-2zm9-11h2v8h-2V8zM5 8h2v8H5V8zm12 0h2v8h-2V8zM2 3v3h20V3H2z"/>
+            </svg>
+        </div>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 sm:py-20 bg-white">
-        <div class="container mx-auto px-4 sm:px-6">
-            <h2 class="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-4">Contact Us</h2>
-            <p class="text-center text-gray-600 mb-8 sm:mb-12 max-w-3xl mx-auto px-4">Have questions about our services? We're here to help. Get in touch with our team.</p>
-            
-            <div class="max-w-4xl mx-auto">
-                <!-- Contact Button -->
-                <div class="text-center mb-12">
-                    <a href="mailto:info@smartpantry.com" 
-                       class="inline-flex items-center justify-center bg-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl space-x-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <!-- Coffee Cup -->
+        <div class="floating-icon icon-13">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="#6C5CE7">
+                <path d="M2 21v-2h18v2H2zM20 8V5h-2v3h2zm0-5c1.1 0 2 .9 2 2v3c0 1.1-.9 2-2 2h-2v3c0 2.21-1.79 4-4 4H8c-2.21 0-4-1.79-4-4V3h16z"/>
+            </svg>
+        </div>
+
+        <!-- Lemon -->
+        <div class="floating-icon icon-14">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFD93D">
+                <circle cx="12" cy="12" r="8"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+            </svg>
+        </div>
+
+        <!-- Cutting Board -->
+        <div class="floating-icon icon-15">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="#4ECDC4">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+            </svg>
+        </div>
+
+        <!-- Garlic -->
+        <div class="floating-icon icon-16">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#FF6B6B">
+                <circle cx="12" cy="12" r="6"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+            </svg>
+        </div>
+
+        <!-- Blender -->
+        <div class="floating-icon icon-17">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="#6C5CE7">
+                <path d="M16 2H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-4 17c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+            </svg>
+        </div>
+
+        <!-- Timer -->
+        <div class="floating-icon icon-18">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="#FFD93D">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2" stroke="white" stroke-width="2" fill="none"/>
+            </svg>
+        </div>
+
+        <div class="content-container">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-6xl sm:text-7xl font-bold mb-6 tracking-tight hero-title">
+                    <span class="text-gray-900 block">Smart Kitchen.</span>
+                    <span class="text-brand-green block mt-2">Less Waste.</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto hero-description">
+                    Manage your kitchen inventory smartly, get expiration notifications in your Google Calendar, and compete with others in reducing food waste.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4 hero-buttons">
+                    <a href="/login.html?signup=true" class="btn-primary">
+                        Get Started
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                         </svg>
-                        <span>Send us an Email</span>
+                    </a>
+                    <a href="#how-it-works" class="btn-secondary">
+                        Learn More
                     </a>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <!-- Contact Information -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center">
-                    <div class="p-4 sm:p-6 bg-gray-50 rounded-xl">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="pt-20 pb-20 bg-white full-width-section">
+        <div class="content-container">
+            <div class="text-center mb-16">
+                <span class="bg-brand-light text-brand-green px-4 py-2 rounded-full text-sm font-medium">How It Works</span>
+                <h2 class="text-4xl font-bold mt-6 mb-4">How Smart Pantry Works</h2>
+                <p class="text-xl text-gray-600">Smart Pantry helps you manage your kitchen efficiently while reducing food waste and staying organized.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-12">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 mt-1 bg-brand-light rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                             </svg>
                         </div>
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Email</h3>
-                        <p class="text-gray-600 text-sm sm:text-base">info@smartpantry.com</p>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900">Digital Pantry Management</h3>
+                            <p class="text-gray-600 text-lg">Keep track of all your ingredients in one place with our smart digital pantry system. Add items easily and monitor your inventory in real-time.</p>
+                        </div>
                     </div>
-                    <div class="p-4 sm:p-6 bg-gray-50 rounded-xl">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 mt-1 bg-brand-light rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Phone</h3>
-                        <p class="text-gray-600 text-sm sm:text-base">(555) 123-4567</p>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900">Google Calendar Integration</h3>
+                            <p class="text-gray-600 text-lg">Receive timely notifications in your Google Calendar when ingredients are about to expire, helping you plan meals and reduce waste.</p>
+                        </div>
                     </div>
-                    <div class="p-4 sm:p-6 bg-gray-50 rounded-xl">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 mt-1 bg-brand-light rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                             </svg>
                         </div>
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2">Business Hours</h3>
-                        <p class="text-gray-600 text-sm sm:text-base">Mon-Fri: 9AM - 5PM</p>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900">CO₂ Savings Leaderboard</h3>
+                            <p class="text-gray-600 text-lg">Compare your environmental impact with other users on our CO₂ savings leaderboard and get motivated to reduce food waste even more.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 mt-1 bg-brand-light rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2 text-gray-900">Tips and Tricks</h3>
+                            <p class="text-gray-600 text-lg">Access a wealth of kitchen management tips, storage advice, and recipe suggestions to make the most of your ingredients.</p>
+                        </div>
                     </div>
                 </div>
+                <div>
+                    <img src="images/logo.png" alt="Smart Pantry Logo" class="w-full">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-pattern full-width-section">
+        <div class="content-container">
+            <div class="text-center mb-16">
+                <span class="bg-brand-light text-brand-green px-4 py-2 rounded-full text-sm font-medium">About Us</span>
+                <h2 class="text-4xl font-bold mt-6 mb-4">Smart Features</h2>
+                <p class="text-xl text-gray-600">Experience a smarter way to manage your kitchen and reduce food waste.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-3xl shadow-lg feature-card">
+                    <div class="bg-brand-light w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Digital Pantry</h3>
+                    <p class="text-gray-600">Keep track of all your ingredients in one place with our intuitive digital pantry system.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-lg feature-card">
+                    <div class="bg-brand-light w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Calendar Integration</h3>
+                    <p class="text-gray-600">Never miss an expiration date with automatic Google Calendar notifications.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-lg feature-card">
+                    <div class="bg-brand-light w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">CO₂ Leaderboard</h3>
+                    <p class="text-gray-600">Compare your environmental impact with others and get motivated to reduce food waste.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-white full-width-section">
+        <div class="content-container">
+            <div class="text-center mb-16">
+                <span class="bg-brand-light text-brand-green px-4 py-2 rounded-full text-sm font-medium">Pricing</span>
+                <h2 class="text-4xl font-bold mt-6 mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600">Start reducing food waste and managing your kitchen smarter today</p>
+            </div>
+
+            <div class="max-w-lg mx-auto bg-white rounded-3xl shadow-xl overflow-hidden pricing-card">
+                <div class="p-8 bg-brand-light">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Smart Pantry Premium</h3>
+                            <p class="text-gray-600 mt-2">All the tools you need for smart kitchen management</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-4xl font-bold text-brand-green">€5<span class="text-lg">/mo</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8">
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-green mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-700">Digital pantry management</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-green mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-700">Google Calendar integration</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-green mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-700">CO₂ savings leaderboard</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-green mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-700">Storage tips and tricks</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-green mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-700">Expiration notifications</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-brand-green mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="text-gray-700">7-day free trial</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <a href="/login.html?signup=true" class="block w-full bg-brand-green text-white text-center py-4 rounded-full text-lg font-semibold hover:bg-green-600 transition-colors">
+                            Start Free Trial
+                        </a>
+                        <p class="text-sm text-gray-500 text-center mt-4">No credit card required for trial</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-20 bg-white full-width-section">
+        <div class="content-container">
+            <div class="text-center mb-16">
+                <span class="bg-brand-light text-brand-green px-4 py-2 rounded-full text-sm font-medium">Testimonials</span>
+                <h2 class="text-4xl font-bold mt-6 mb-4">What Our Users Say</h2>
+                <p class="text-xl text-gray-600">See how Smart Pantry helps users reduce waste and stay organized.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-brand-light p-8 rounded-3xl testimonial-card">
+                    <svg class="w-12 h-12 text-brand-green mb-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <p class="text-gray-600 mb-6">The Google Calendar integration is fantastic! I always know when my ingredients are about to expire, which has helped me reduce waste significantly.</p>
+                    <div class="flex items-center">
+                        <div>
+                            <h4 class="font-bold">Sarah Johnson</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-brand-light p-8 rounded-3xl testimonial-card">
+                    <svg class="w-12 h-12 text-brand-green mb-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <p class="text-gray-600 mb-6">The digital pantry makes it so easy to keep track of everything. The tips and tricks section has taught me so much about proper food storage!</p>
+                    <div class="flex items-center">
+                        <div>
+                            <h4 class="font-bold">Michael Chen</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-brand-light p-8 rounded-3xl testimonial-card">
+                    <svg class="w-12 h-12 text-brand-green mb-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                    <p class="text-gray-600 mb-6">Being on top of the CO₂ savings leaderboard motivates me to be more mindful about food waste. It's made a real difference in how I manage my kitchen.</p>
+                    <div class="flex items-center">
+                        <div>
+                            <h4 class="font-bold">Emma Rodriguez</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-br from-brand-green to-green-600 full-width-section">
+        <div class="content-container text-center text-white">
+            <h2 class="text-4xl font-bold mb-6">Ready to Reduce Food Waste?</h2>
+            <p class="text-xl mb-12 opacity-90">Join our community of environmentally conscious users and start managing your kitchen smarter.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/login.html?signup=true" class="bg-white text-brand-green px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-50 transition-colors">
+                    Sign Up Now
+                </a>
+                <a href="mailto:info@smartstorage.nl" class="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-colors">
+                    Contact Sales
+                </a>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12 sm:py-16 w-full">
-        <div class="container mx-auto px-4 sm:px-6 max-w-7xl">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
-                <div class="text-center sm:text-left">
-                    <div class="flex items-center justify-center sm:justify-start mb-6">
-                        <img src="images/logo.png" alt="Logo" class="h-8 w-8 sm:h-10 sm:w-10 rounded-full">
-                        <h4 class="ml-3 text-lg sm:text-xl font-semibold">Smart Pantry</h4>
+    <footer class="bg-gray-900 text-white py-16 full-width-section">
+        <div class="content-container">
+            <div class="grid md:grid-cols-4 gap-12">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Smart Pantry</h3>
+                    <p class="text-gray-400 mb-4">Smarter Storage. Smarter Living.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                            </svg>
+                        </a>
                     </div>
-                    <p class="text-gray-400 leading-relaxed text-sm sm:text-base">
-                        Smart food management for modern businesses. Revolutionizing how companies handle their food resources.
-                    </p>
                 </div>
-                <div class="text-center sm:text-left">
-                    <h4 class="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Quick Links</h4>
-                    <ul class="space-y-2 sm:space-y-4">
-                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">About</a></li>
-                        <li><a href="#subscription" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Pricing</a></li>
-                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Contact</a></li>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Press</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
                     </ul>
                 </div>
-                <div class="text-center sm:text-left">
-                    <h4 class="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Legal</h4>
-                    <ul class="space-y-2 sm:space-y-4">
-                        <li><a href="privacy-policy.html" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Privacy Policy</a></li>
-                        <li><a href="terms-of-service.html" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Terms of Service</a></li>
-                        <li><a href="unsubscribing-policy.html" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Unsubscribing Policy</a></li>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Guides</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">API Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Community</a></li>
                     </ul>
                 </div>
-                <div class="text-center sm:text-left">
-                    <h4 class="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Contact</h4>
-                    <ul class="space-y-2 sm:space-y-4">
-                        <li class="flex items-center text-gray-400 justify-center sm:justify-start text-sm sm:text-base">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            info@smartpantry.com
-                        </li>
-                        <li class="flex items-center text-gray-400 justify-center sm:justify-start text-sm sm:text-base">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            (555) 123-4567
-                        </li>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Cookie Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">GDPR</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center">
-                <p class="text-gray-400 text-sm sm:text-base text-center sm:text-left">&copy; 2024 Smart Pantry. All rights reserved.</p>
-                <div class="flex space-x-4 sm:space-x-6 mt-4 sm:mt-0">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <span class="sr-only">Twitter</span>
-                        <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
-                        </svg>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                        <span class="sr-only">LinkedIn</span>
-                        <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                        </svg>
-                    </a>
-                </div>
+
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-400">&copy; 2025 Smart Pantry. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Add mobile menu toggle script before closing body tag -->
     <script>
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobileMenu');
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon = document.getElementById('menuIcon');
+        const closeIcon = document.getElementById('closeIcon');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
             mobileMenu.classList.toggle('hidden');
+            menuIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
         }
 
-        // Close mobile menu when clicking on a link
+        mobileMenuButton.addEventListener('click', toggleMenu);
+
+        // Close mobile menu when clicking menu items
         document.querySelectorAll('#mobileMenu a').forEach(link => {
             link.addEventListener('click', () => {
-                const mobileMenu = document.getElementById('mobileMenu');
-                if (window.innerWidth < 640) { // sm breakpoint in Tailwind
-                    mobileMenu.classList.add('hidden');
-                }
+                if (isMenuOpen) toggleMenu();
             });
         });
 
-        // Handle resize events
-        window.addEventListener('resize', () => {
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
             const mobileMenu = document.getElementById('mobileMenu');
-            if (window.innerWidth >= 640) { // sm breakpoint in Tailwind
-                mobileMenu.classList.remove('hidden');
-            } else {
+            const mobileMenuButton = document.querySelector('button.md:hidden');
+            
+            if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
                 mobileMenu.classList.add('hidden');
             }
         });
+
+        // Close mobile menu when window is resized
+        window.addEventListener('resize', () => {
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (window.innerWidth >= 768) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Initialize animations when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate feature cards
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 + (index * 200));
+            });
+
+            // Animate testimonial cards
+            const testimonialCards = document.querySelectorAll('.testimonial-card');
+            testimonialCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateX(0)';
+                }, 100 + (index * 200));
+            });
+
+            // Animate pricing card
+            const pricingCard = document.querySelector('.pricing-card');
+            if (pricingCard) {
+                setTimeout(() => {
+                    pricingCard.style.opacity = '1';
+                    pricingCard.style.transform = 'scale(1)';
+                }, 300);
+            }
+        });
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for scroll animations
+        document.querySelectorAll('.feature-card, .testimonial-card').forEach(element => {
+            observer.observe(element);
+        });
     </script>
 </body>
-
-
 </html>
