@@ -10,7 +10,34 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="shortcut icon" href="images/logo.png" type="image/png">
     <link rel="apple-touch-icon" href="images/logo.png">
-    
+    <script>
+        // Check if user is already logged in
+        function checkAuth() {
+            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+            if (!token) return false;
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const expiration = payload.exp * 1000;
+                if (Date.now() >= expiration) {
+                    sessionStorage.removeItem("token");
+                    sessionStorage.removeItem("authToken");
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                console.error("Invalid token:", err);
+                return false;
+            }
+        }
+
+        // Redirect to dashboard if already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                window.location.href = "dashboard.html";
+            }
+        });
+    </script>
 </head>
 
 <body class="bg-gray-50">
