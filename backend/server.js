@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import MongoStore from 'connect-mongo';
 import path from "path";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
@@ -69,12 +70,24 @@ app.use(cookieParser());
 // ✅ Serve static files from the public directory
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
-// ✅ Session Middleware
+// ✅ Session Middleware with MongoDB Store
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        collectionName: 'sessions', // Optional: customize the collection name
+        ttl: 24 * 60 * 60, // Session TTL (in seconds) - 1 day
+        autoRemove: 'native', // Enable automatic removal of expired sessions
+        touchAfter: 24 * 3600 // Time period in seconds between session updates
+    }),
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        maxAge: 24 * 60 * 60 * 1000, // Cookie expiry (in milliseconds) - 1 day
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    }
 }));
 
 // ✅ Routes
