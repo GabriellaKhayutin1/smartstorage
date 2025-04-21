@@ -17,16 +17,39 @@
 
 <body class="hidden" onload="document.body.classList.remove('hidden')">
 
-    <!-- 🔹 Always Visible Navbar -->
-    <nav class="navbar fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
-        <div class="flex items-center space-x-4">
-            <img src="images/logo.png" alt="Logo" class="h-16 w-16 rounded-full">
-            <span class="text-3xl font-bold text-green-900 tracking-wide">Smart Pantry</span>
-        </div>
-        <div class="space-x-6 flex">
-            <a href="index.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Pantry</a>
-            <a href="profile.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Profile</a>
-            <a href="tips.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Tips</a>
+    <!-- 🔹 Responsive Navbar -->
+    <nav class="navbar fixed top-0 z-50 w-full py-4 px-4 sm:px-10 bg-white bg-opacity-20 backdrop-blur-md shadow-md">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center">
+                <!-- Logo and Title -->
+                <div class="flex items-center space-x-4">
+                    <img src="images/logo.png" alt="Logo" class="h-12 w-12 sm:h-16 sm:w-16 rounded-full">
+                    <span class="text-2xl sm:text-3xl font-bold text-green-900 tracking-wide">Smart Pantry</span>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button type="button" class="lg:hidden text-gray-600 hover:text-green-900 focus:outline-none" onclick="toggleMobileMenu()">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex space-x-6">
+                    <a href="dashboard.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Pantry</a>
+                    <a href="profile.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Profile</a>
+                    <a href="tips.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Tips</a>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobileMenu" class="hidden lg:hidden mt-4 pb-4">
+                <div class="flex flex-col space-y-2">
+                    <a href="dashboard.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148] text-center">Pantry</a>
+                    <a href="profile.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148] text-center">Profile</a>
+                    <a href="tips.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148] text-center">Tips</a>
+                </div>
+            </div>
         </div>
     </nav> 
 
@@ -155,7 +178,29 @@
     });
 </script>
 
-    
+    <!-- Add mobile menu toggle script before closing body tag -->
+    <script>
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', () => {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Handle resize events
+        window.addEventListener('resize', () => {
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (window.innerWidth >= 1024) { // lg breakpoint in Tailwind
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 
