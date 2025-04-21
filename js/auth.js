@@ -37,10 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (token) {
       sessionStorage.setItem("token", token);
-      window.location.href = "/profile.html";
+      window.location.href = "dashboard.html";
     } else {
       console.error("No token received from Google OAuth");
-      window.location.href = "/login.html";
+      window.location.href = "login.html";
     }
   }
 
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         sessionStorage.setItem("token", data.token);
         // No need for login success alert, just redirect
-        window.location.href = "/profile.html";
+        window.location.href = "dashboard.html";
       } catch (error) {
         console.error("Error logging in:", error);
         alert(error.message);
