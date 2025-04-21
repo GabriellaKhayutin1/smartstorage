@@ -44,15 +44,20 @@
                 <img src="/images/logo.png" alt="Smart Storage Logo" class="w-28 h-28 drop-shadow-lg">
             </div>
 
-            <h2 class="text-4xl font-bold text-center text-gray-900 mb-2">Welcome Back</h2>
-            <p class="text-center text-gray-600 mb-8">Sign in to access your smart storage</p>
+            <h2 class="text-4xl font-bold text-center text-gray-900 mb-2" id="welcomeText">Welcome Back</h2>
+            <p class="text-center text-gray-600 mb-8" id="subtitleText">Sign in to access your smart storage</p>
 
             <!-- Google Login Button -->
             <a href="https://smartstorage-k0v4.onrender.com/auth/google"       
                class="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 py-4 px-6 text-gray-700 text-lg rounded-xl transition-all duration-300 hover:bg-gray-50 hover:border-gray-300 active:scale-95 shadow-lg hover:shadow-xl font-semibold group">
                 <img src="/images/Google__G__logo.svg.png" alt="Google Logo" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300">
-                <span class="group-hover:text-gray-900 transition-colors duration-300">Sign in with Google</span>
+                <span class="group-hover:text-gray-900 transition-colors duration-300" id="googleButtonText">Sign in with Google</span>
             </a>
+
+            <!-- Back to Home -->
+            <div class="mt-6 text-center">
+                <a href="index.html" class="text-green-600 hover:text-green-700 font-medium">← Back to Home</a>
+            </div>
 
             <!-- Terms -->
             <p class="mt-8 text-center text-sm text-gray-500">
@@ -81,5 +86,53 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Check if we're in signup mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const isSignup = urlParams.get('signup') === 'true';
+
+        // Update UI based on mode
+        if (isSignup) {
+            document.getElementById('welcomeText').textContent = 'Create Account';
+            document.getElementById('subtitleText').textContent = 'Sign up to get started with Smart Storage';
+            document.getElementById('googleButtonText').textContent = 'Sign up with Google';
+        }
+
+        // Check if user is already logged in
+        function checkAuth() {
+            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+            if (!token) return false;
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const expiration = payload.exp * 1000;
+                if (Date.now() >= expiration) {
+                    sessionStorage.removeItem("token");
+                    sessionStorage.removeItem("authToken");
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                console.error("Invalid token:", err);
+                return false;
+            }
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for token in URL (after OAuth redirect)
+            const tokenFromUrl = urlParams.get("token");
+            if (tokenFromUrl) {
+                sessionStorage.setItem("authToken", tokenFromUrl);
+                window.history.replaceState(null, null, window.location.pathname);
+            }
+
+            // If user is already authenticated, redirect to dashboard
+            if (checkAuth()) {
+                window.location.href = "dashboard.html";
+            }
+        });
+    </script>
 </body>
 </html>

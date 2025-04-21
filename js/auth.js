@@ -26,6 +26,11 @@ function checkAuth() {
 
 // ✅ Handle Google OAuth callback
 document.addEventListener("DOMContentLoaded", () => {
+  // Clear any previous alert flags when loading login page
+  if (window.location.pathname.includes('login.html')) {
+    sessionStorage.removeItem('alertShown');
+  }
+
   if (window.location.pathname === '/auth/google/callback') {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -62,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         sessionStorage.setItem("token", data.token);
-        alert("Login successful!");
+        // No need for login success alert, just redirect
         window.location.href = "/profile.html";
       } catch (error) {
         console.error("Error logging in:", error);
@@ -78,7 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         const response = await fetch(`${window.API_BASE_URL}/api/auth/register`, {
-            
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -89,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error(data.error || "Registration failed");
         }
 
+        // Success message and redirect
         alert("Registration successful! Please login.");
         window.location.href = "/login.html";
       } catch (error) {

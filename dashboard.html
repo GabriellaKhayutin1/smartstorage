@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pantry - Dashboard</title>
+    <script type="module" src="js/co2Calculator.js"></script>
+    <script type="module" src="js/script.js"></script>    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" href="images/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+</head>
+
+<body class="hidden" onload="document.body.classList.remove('hidden')">
+    <!-- 🔹 Always Visible Navbar -->
+    <nav class="navbar fixed top-0 z-50 w-full py-4 px-10 flex justify-between items-center shadow-md bg-white bg-opacity-20 backdrop-blur-md">
+        <div class="flex items-center space-x-4">
+            <img src="images/logo.png" alt="Logo" class="h-16 w-16 rounded-full">
+            <span class="text-3xl font-bold text-green-900 tracking-wide">Smart Pantry</span>
+        </div>
+        <div class="space-x-6 flex">
+            <a href="dashboard.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Dashboard</a>
+            <a href="profile.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Profile</a>
+            <a href="tips.html" class="text-lg font-semibold text-white bg-[#5C8D5A] px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-[#487148]">Tips</a>
+            <button onclick="logout()" class="text-lg font-semibold text-white bg-red-600 px-6 py-2 rounded-full shadow-md transition duration-300 hover:bg-red-700">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Rest of the existing content -->
+    // ... existing code ...
+
+    <script>
+        function checkAuth() {
+            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+            if (!token) return false;
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const expiration = payload.exp * 1000;
+                if (Date.now() >= expiration) {
+                    sessionStorage.removeItem("token");
+                    sessionStorage.removeItem("authToken");
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                console.error("Invalid token:", err);
+                return false;
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("authToken");
+            window.location.href = "index.html";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get("token");
+
+            if (tokenFromUrl) {
+                sessionStorage.setItem("authToken", tokenFromUrl);
+                window.history.replaceState(null, null, window.location.pathname);
+            }
+
+            if (!checkAuth()) {
+                window.location.href = "login.html";
+            } else {
+                document.body.classList.remove("hidden");
+                console.log("✅ Authenticated, showing content.");
+            }
+        });
+    </script>
+</body>
+</html> 

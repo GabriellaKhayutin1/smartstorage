@@ -279,6 +279,12 @@ function calculateCO2Savings(ingredients) {
 
 /* 🔹 Redirect Helper */
 function redirectToLogin() {
-  alert("⚠ You must log in first!");
-  window.location.href = "login.html";
+    // Only show alert if we're not already on the login page and haven't shown it recently
+    if (!window.location.pathname.includes('login.html') && !sessionStorage.getItem('alertShown')) {
+        alert("⚠ You must log in first!");
+        sessionStorage.setItem('alertShown', 'true');
+        // Clear the alert flag after 2 seconds
+        setTimeout(() => sessionStorage.removeItem('alertShown'), 2000);
+    }
+    window.location.href = "login.html";
 }
