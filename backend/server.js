@@ -198,8 +198,8 @@ app.get("/oauthcallback", async (req, res) => {
         });
 
         const frontendRedirect = process.env.NODE_ENV === 'production'
-  ? "https://smartstorage-k0v4.onrender.com/index.html"
-  : "http://127.0.0.1:5502/index.html";
+  ? "https://smartstorage-k0v4.onrender.com/dashboard.html"
+  : "http://127.0.0.1:5502/dashboard.html";
 
 res.redirect(`${frontendRedirect}?token=${jwtToken}`);
     } catch (error) {
