@@ -78,16 +78,16 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, authToken');
     
-    // Add CSP headers for Stripe
+    // Updated CSP headers to allow more resources
     res.header(
         'Content-Security-Policy',
-        "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://api.stripe.com https://*.stripe.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.stripe.com; " +
-        "font-src 'self' https://fonts.gstatic.com; " +
-        "img-src 'self' data: https://*.stripe.com; " +
+        "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://api.stripe.com https://*.stripe.com https://cdn.tailwindcss.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.stripe.com https://cdn.tailwindcss.com; " +
+        "font-src 'self' https://fonts.gstatic.com data:; " +
+        "img-src 'self' data: https://*.stripe.com https: blob:; " +
         "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.stripe.com; " +
-        "connect-src 'self' http://localhost:5503 http://localhost:5003 https://api.stripe.com https://merchant-ui-api.stripe.com https://r.stripe.com https://*.stripe.com; "
+        "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://r.stripe.com https://*.stripe.com;"
     );
     next();
 });
@@ -97,8 +97,10 @@ app.use('/api/payments/webhook', express.raw({type: 'application/json'}));
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Serve static files
-app.use(express.static(path.join(__dirname, '../')));
+// ✅ Serve static files - Updated path resolution
+const staticPath = path.join(__dirname, '..');
+console.log('Serving static files from:', staticPath);
+app.use(express.static(staticPath));
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
 // ✅ Session Middleware with MongoDB Store

@@ -2,7 +2,9 @@ services:
   - type: web
     name: smartstorage
     env: node
-    buildCommand: npm install
+    buildCommand: |
+      npm install
+      cd backend && npm install
     startCommand: cd backend && node server.js
     envVars:
       - key: NODE_ENV
