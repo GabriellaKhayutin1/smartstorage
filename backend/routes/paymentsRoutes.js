@@ -414,4 +414,9 @@ async function updateUserSubscription(userId, updateData) {
     }
 }
 
+// Get Stripe publishable key
+router.get('/publishable-key', (req, res) => {
+    res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
+});
+
 export default router; 

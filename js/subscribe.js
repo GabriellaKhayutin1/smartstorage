@@ -5,11 +5,25 @@ const API_BASE_URL = window.location.hostname === "localhost" || window.location
     ? "http://localhost:5003"
     : "https://smartstorage-k0v4.onrender.com";
 
-// Initialize Stripe
-const stripe = Stripe('pk_test_51RGi59CFusp413AAv9Qh9XeVgaNVaaoeALB07uycp5tLq7vgnoerP5uPtO43yVxs818wAzNvLkPCrrFPZlpvEbS600qfdkE6cW');
+let stripe;
 
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize Stripe with the publishable key from the backend
+async function initializeStripe() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/payments/publishable-key`);
+        const { publishableKey } = await response.json();
+        stripe = Stripe(publishableKey);
+        console.log('Stripe initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize Stripe:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('--- subscribe.js: DOMContentLoaded event fired ---');
+    
+    // Initialize Stripe first
+    await initializeStripe();
     
     // Check if we're returning from a successful payment
     const urlParams = new URLSearchParams(window.location.search);

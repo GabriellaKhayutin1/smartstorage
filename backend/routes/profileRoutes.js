@@ -3,6 +3,8 @@ import multer from "multer";
 import path from "path";
 import User from "../models/User.js";
 import authenticate from "../middleware/authMiddleware.js";
+import Ingredient from "../models/Ingredient.js";
+import MonthlyCO2 from "../models/MonthlyCO2.js";
 
 const router = express.Router();
 
@@ -88,6 +90,40 @@ router.get('/', authenticate, async (req, res) => {
     } catch (error) {
         console.error('Error fetching user profile:', error);
         res.status(500).json({ error: 'Error fetching user profile' });
+    }
+});
+
+// ✅ Fetch Ingredients for Authenticated User
+router.get("/ingredients", authenticate, async (req, res) => {
+    try {
+        console.log("🔎 Fetching ingredients for user:", req.user.userId);
+        const ingredients = await Ingredient.find({ userId: req.user.userId });
+        res.json(ingredients);
+    } catch (error) {
+        console.error("❌ Error fetching ingredients:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Get monthly CO2 analytics
+router.get('/co2-savings/monthly', authenticate, async (req, res) => {
+    try {
+        const { year: queryYear } = req.query;
+        const currentYear = new Date().getFullYear();
+        const targetYear = queryYear ? parseInt(queryYear) : currentYear;
+        console.log(`📊 [CO2 Route] Fetching monthly data for user: ${req.user.userId}, year: ${targetYear}`); // Log year
+
+        const monthlyData = await MonthlyCO2.find({
+            userId: req.user.userId,
+            year: targetYear
+        }).sort({ month: 1 }); // Sort by month
+
+        console.log(`📊 [CO2 Route] Found data:`, JSON.stringify(monthlyData, null, 2)); // Log data found
+
+        res.json(monthlyData);
+    } catch (error) {
+        console.error('Error fetching monthly CO2 data:', error);
+        res.status(500).json({ error: 'Failed to fetch monthly CO2 data' });
     }
 });
 

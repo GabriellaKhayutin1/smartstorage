@@ -83,35 +83,57 @@
   </div>
 
   <script>
-    const stripe = Stripe('pk_test_51RGi59CFusp413AAv9Qh9XeVgaNVaaoeALB07uycp5tLq7vgnoerP5uPtO43yVxs818wAzNvLkPCrrFPZlpvEbS600qfdkE6cW'); // Replace with your Stripe publishable key
+    // ✅ Dynamic API base URL
+    const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+        ? "http://localhost:5003"
+        : "https://smartstorage-k0v4.onrender.com";
 
-    // Retrieve the "payment_intent_client_secret" query parameter
-    const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret');
+    let stripe;
 
-    // Retrieve the PaymentIntent
-    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-      const loadingElement = document.getElementById('loading');
-      const successElement = document.getElementById('success');
-      const errorElement = document.getElementById('error');
+    // Initialize Stripe with the publishable key from the backend
+    async function initializeStripe() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/payments/publishable-key`);
+            const { publishableKey } = await response.json();
+            stripe = Stripe(publishableKey);
+            console.log('Stripe initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize Stripe:', error);
+        }
+    }
 
-      switch (paymentIntent.status) {
-        case 'succeeded':
-          loadingElement.classList.add('hidden');
-          successElement.classList.remove('hidden');
-          break;
-        case 'processing':
-          // The payment is still processing
-          break;
-        case 'requires_payment_method':
-          // The payment failed or was cancelled
-          loadingElement.classList.add('hidden');
-          errorElement.classList.remove('hidden');
-          break;
-        default:
-          loadingElement.classList.add('hidden');
-          errorElement.classList.remove('hidden');
-          break;
-      }
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Initialize Stripe first
+        await initializeStripe();
+        
+        // Retrieve the "payment_intent_client_secret" query parameter
+        const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret');
+
+        // Retrieve the PaymentIntent
+        stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
+          const loadingElement = document.getElementById('loading');
+          const successElement = document.getElementById('success');
+          const errorElement = document.getElementById('error');
+
+          switch (paymentIntent.status) {
+            case 'succeeded':
+              loadingElement.classList.add('hidden');
+              successElement.classList.remove('hidden');
+              break;
+            case 'processing':
+              // The payment is still processing
+              break;
+            case 'requires_payment_method':
+              // The payment failed or was cancelled
+              loadingElement.classList.add('hidden');
+              errorElement.classList.remove('hidden');
+              break;
+            default:
+              loadingElement.classList.add('hidden');
+              errorElement.classList.remove('hidden');
+              break;
+          }
+        });
     });
   </script>
 </body>

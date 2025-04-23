@@ -1,5 +1,5 @@
 import express from "express";
-import Ingredient from "../models/Ingredient.js"; 
+import Ingredient from "../models/Ingredient.js";
 import User from "../models/User.js"; 
 
 const router = express.Router();
@@ -12,9 +12,12 @@ router.get('/waste-reduction', async (req, res) => {
   try {
     const leaderboard = await Ingredient.aggregate([
       {
+        $match: { co2Saved: { $gt: 0 } }
+      },
+      {
         $group: {
           _id: "$userId",
-          co2Saved: { $sum: "$co2Saved" }
+          totalCo2Saved: { $sum: "$co2Saved" }
         }
       },
       {
@@ -30,6 +33,8 @@ router.get('/waste-reduction', async (req, res) => {
       },
       {
         $project: {
+          _id: 0,
+          userId: "$_id",
           email: "$userInfo.email",
           name: {
             $ifNull: [
@@ -43,7 +48,7 @@ router.get('/waste-reduction', async (req, res) => {
               }
             ]
           },
-          co2Saved: 1
+          co2Saved: "$totalCo2Saved"
         }
       },
       {

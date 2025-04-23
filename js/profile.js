@@ -1,12 +1,11 @@
-import { CO2_SAVINGS } from "./co2Calculator.js";
+import { showNotification, fetchWithAuth, getToken, isAuthenticated, calculateCO2Savings, logout } from './auth.js';
 
-const API_BASE_URL = window.API_BASE_URL;
+// Define API_BASE_URL directly within this module
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5003"
+    : "https://smartstorage-k0v4.onrender.com";
 
-
-
-function calculateCO2Savings(ingredients) {
-    return ingredients.reduce((total, item) => total + (CO2_SAVINGS[item.category] || 0), 0);
-}
+let leaderboardIntervalId = null; // Variable to hold the interval ID
 
 function extractName(email) {
     if (!email) return 'Anonymous User';
@@ -93,8 +92,38 @@ function initializeProfilePictureUpload(userData) {
     });
 }
 
+// --- New Function to Fetch and Update Leaderboard --- 
+async function refreshLeaderboard() {
+    console.log('🏆 Refreshing leaderboard data...');
+    const token = getToken(); // Use getToken from auth.js
+    if (!token) {
+        console.log('🏆 No token found, cannot refresh leaderboard.');
+        // Optionally clear interval if token disappears
+        if (leaderboardIntervalId) clearInterval(leaderboardIntervalId);
+        return;
+    }
+
+    try {
+        const leaderboardResponse = await fetchWithAuth(`${API_BASE_URL}/api/leaderboard/waste-reduction`); // Use fetchWithAuth
+
+        if (!leaderboardResponse.ok) {
+            console.error(`🏆 Leaderboard fetch failed: ${leaderboardResponse.status}`);
+            // Optionally notify user or stop interval on repeated errors
+            return;
+        }
+        const leaderboard = await leaderboardResponse.json();
+        updateLeaderboardUI(leaderboard);
+        console.log('🏆 Leaderboard UI updated.');
+    } catch (error) {
+        console.error('🏆 Error refreshing leaderboard:', error);
+        // Optionally notify user
+        // showNotification('Could not refresh leaderboard data.', 'error');
+    }
+}
+// --- End New Function ---
+
 async function loadUserProfile() {
-    const token =sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+    const token = getToken(); // Use getToken from auth.js
     if (!token) return window.location.href = '/login.html';
 
     let userData;
@@ -119,58 +148,47 @@ async function loadUserProfile() {
     initializeProfilePictureUpload(userData);
 
     try {
-        const ingredientsResponse = await fetch(`${API_BASE_URL}/api/ingredients`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
+        // Fetch ingredients and update stats cards
+        const ingredientsResponse = await fetchWithAuth(`${API_BASE_URL}/api/profile/ingredients`);
         if (!ingredientsResponse.ok) throw new Error('Failed to fetch ingredients');
-
         const ingredients = await ingredientsResponse.json();
         const co2Saved = calculateCO2Savings(ingredients);
-
         document.getElementById('total-saved').textContent = co2Saved.toFixed(1);
         document.getElementById('items-managed').textContent = ingredients.length;
-        document.getElementById('waste-prevented').textContent = (co2Saved * 0.5).toFixed(1);
+        document.getElementById('waste-prevented').textContent = (co2Saved * 0.5).toFixed(1); // Assuming waste prevented calculation is based on this
 
-        const leaderboardResponse = await fetch(`${API_BASE_URL}/api/leaderboard/waste-reduction`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!leaderboardResponse.ok) throw new Error('Failed to fetch leaderboard');
-        const leaderboard = await leaderboardResponse.json();
-        updateLeaderboardUI(leaderboard);
+        // REMOVED leaderboard fetch from here - handled by refreshLeaderboard
+        // const leaderboardResponse = await fetchWithAuth(...);
+        // const leaderboard = await leaderboardResponse.json();
+        // updateLeaderboardUI(leaderboard);
 
     } catch (error) {
-        console.error('Profile load error:', error);
-        showNotification(error.message || 'Error loading profile', 'error');
-        document.getElementById('user-name').textContent = 'Error';
-        document.getElementById('user-email').textContent = error.message;
+        console.error('Profile load error (ingredients/stats):', error);
+        showNotification(error.message || 'Error loading profile stats', 'error');
+        // Handle error display for stats cards if needed
     }
 }
 
 async function loadMonthlyCO2Data() {
     const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
-    if (!token) return;
+    console.log("📊 [CO2 Frontend] Token check (sessionStorage):", token ? "Token found" : "Token NOT found");
+    if (!token) {
+        console.log("📊 [CO2 Frontend] No token, exiting loadMonthlyCO2Data.");
+        return;
+    }
 
     try {
         const year = new Date().getFullYear();
-        const response = await fetch(`${API_BASE_URL}/api/co2-savings/monthly?year=${year}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        console.log(`📊 [CO2 Frontend] Requesting data for year: ${year}`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/profile/co2-savings/monthly?year=${year}`);
 
         if (!response.ok) throw new Error('Failed to fetch monthly CO2 data');
         const monthlyData = await response.json();
+        console.log(`📊 [CO2 Frontend] Received data:`, monthlyData);
 
-        const transformedData = monthlyData.map(month => ({
+        const validMonthlyData = Array.isArray(monthlyData) ? monthlyData : [];
+
+        const transformedData = validMonthlyData.map(month => ({
             month: month.month || 0,
             co2Saved: typeof month.co2Saved === 'number' ? month.co2Saved : 0,
             itemsCount: typeof month.itemsCount === 'number' ? month.itemsCount : 0
@@ -183,6 +201,7 @@ async function loadMonthlyCO2Data() {
 }
 
 function updateCO2Chart(monthlyData) {
+    console.log(`📊 [CO2 Frontend] Updating chart with processed data:`, monthlyData);
     const canvas = document.getElementById('monthlyCO2Chart');
     if (!canvas) return;
 
@@ -198,6 +217,8 @@ function updateCO2Chart(monthlyData) {
     });
 
     const maxCO2 = Math.max(...chartData.map(d => d.co2Saved)) || 10;
+
+    const chartYear = new Date().getFullYear();
 
     if (window.monthlyCO2Chart instanceof Chart) {
         window.monthlyCO2Chart.destroy();
@@ -235,7 +256,7 @@ function updateCO2Chart(monthlyData) {
             plugins: {
                 title: {
                     display: true,
-                    text: `Monthly CO2 Savings (${new Date().getFullYear()})`
+                    text: `Monthly CO2 Savings (${chartYear})`
                 },
                 tooltip: {
                     callbacks: {
@@ -250,13 +271,49 @@ function updateCO2Chart(monthlyData) {
     });
 }
 
-// One unified DOMContentLoaded block
+// --- Modified DOMContentLoaded Listener --- 
 document.addEventListener("DOMContentLoaded", async () => {
+    console.log("🚀 DOMContentLoaded: Starting profile page initialization..."); 
+    if (!isAuthenticated()) { 
+        window.location.href = '/login.html';
+        return;
+    }
+
+    // --- Attach Logout Listener --- 
+    // Find all logout buttons (desktop and mobile nav might have them)
+    const logoutButtons = document.querySelectorAll('button'); // Simple selector, might need refinement
+    logoutButtons.forEach(button => {
+        // Check button text or add a specific class/id if needed for better targeting
+        if (button.textContent.toLowerCase() === 'logout') { 
+            button.addEventListener('click', logout);
+            console.log("🚀 Logout listener attached.");
+        }
+    });
+    // --- End Attach Logout Listener --- 
+
     try {
-        await loadUserProfile();
+        // Load static profile info and CO2 chart first
+        await loadUserProfile(); 
         await loadMonthlyCO2Data();
+
+        // Then load leaderboard initially
+        await refreshLeaderboard(); 
+
+        // Set interval to refresh leaderboard every 30 seconds (30000 ms)
+        leaderboardIntervalId = setInterval(refreshLeaderboard, 30000);
+        console.log(`🚀 Leaderboard refresh interval set (ID: ${leaderboardIntervalId})`);
+
+        console.log("🚀 DOMContentLoaded: Initialization complete."); 
     } catch (error) {
         console.error('Initialization error:', error);
-        showNotification('Error initializing profile. Please refresh the page.', 'error');
+        // ... error handling ...
+    }
+});
+
+// --- Clear Interval When Leaving Page --- 
+window.addEventListener('beforeunload', () => {
+    if (leaderboardIntervalId) {
+        clearInterval(leaderboardIntervalId);
+        console.log(`🚀 Leaderboard refresh interval cleared (ID: ${leaderboardIntervalId})`);
     }
 });

@@ -1,3 +1,5 @@
+import { showNotification } from './auth.js';
+
 // ✅ Define dynamic API base URL (localhost vs production)
 const API_BASE_URL = window.location.hostname.includes("localhost") || window.location.hostname === "127.0.0.1"
   ? "http://localhost:5003"
@@ -97,31 +99,5 @@ async function loadUserProfilePicture(userId) {
         }
     } catch (error) {
         console.error('Error loading profile picture:', error);
-    }
-}
-
-// ✅ Notification helper
-function showNotification(message, type) {
-    try {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg ${
-            type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        } text-white z-50 transition-all duration-300 transform translate-y-0 opacity-100`;
-        notification.textContent = message;
-
-        document.body.appendChild(notification);
-
-        requestAnimationFrame(() => {
-            notification.style.transform = 'translateY(0)';
-            notification.style.opacity = '1';
-        });
-
-        setTimeout(() => {
-            notification.style.transform = 'translateY(-100%)';
-            notification.style.opacity = '0';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    } catch (error) {
-        console.error('Error showing notification:', error);
     }
 }

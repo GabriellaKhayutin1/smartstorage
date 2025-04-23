@@ -7,7 +7,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Smart Storage</title>
-    <script defer src="js/auth.js"></script>
+    <script type="module">
+        import { isAuthenticated, setToken } from './js/auth.js';
+        
+        // Check if we're in signup mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const isSignup = urlParams.get('signup') === 'true';
+
+        // Update UI based on mode
+        if (isSignup) {
+            document.getElementById('welcomeText').textContent = 'Create Account';
+            document.getElementById('subtitleText').textContent = 'Sign up to get started with Smart Storage';
+            document.getElementById('googleButtonText').textContent = 'Sign up with Google';
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set the Google login button URL dynamically
+            const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+                ? "http://localhost:5003"
+                : "https://smartstorage-k0v4.onrender.com";
+            
+            document.getElementById('googleLoginBtn').href = `${API_BASE_URL}/auth/google`;
+
+            // Check for token in URL (after OAuth redirect)
+            const tokenFromUrl = urlParams.get("token");
+            if (tokenFromUrl) {
+                setToken(tokenFromUrl);
+                window.history.replaceState(null, null, window.location.pathname);
+            }
+
+            // If user is already authenticated, redirect to dashboard
+            if (isAuthenticated()) {
+                window.location.href = "dashboard.html";
+            }
+        });
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -86,60 +121,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // Check if we're in signup mode
-        const urlParams = new URLSearchParams(window.location.search);
-        const isSignup = urlParams.get('signup') === 'true';
-
-        // Update UI based on mode
-        if (isSignup) {
-            document.getElementById('welcomeText').textContent = 'Create Account';
-            document.getElementById('subtitleText').textContent = 'Sign up to get started with Smart Storage';
-            document.getElementById('googleButtonText').textContent = 'Sign up with Google';
-        }
-
-        // Check if user is already logged in
-        function checkAuth() {
-            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
-            if (!token) return false;
-
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const expiration = payload.exp * 1000;
-                if (Date.now() >= expiration) {
-                    sessionStorage.removeItem("token");
-                    sessionStorage.removeItem("authToken");
-                    return false;
-                }
-                return true;
-            } catch (err) {
-                console.error("Invalid token:", err);
-                return false;
-            }
-        }
-
-        // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Set the Google login button URL dynamically
-            const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-                ? "http://localhost:5003"
-                : "https://smartstorage-k0v4.onrender.com";
-            
-            document.getElementById('googleLoginBtn').href = `${API_BASE_URL}/auth/google`;
-
-            // Check for token in URL (after OAuth redirect)
-            const tokenFromUrl = urlParams.get("token");
-            if (tokenFromUrl) {
-                sessionStorage.setItem("authToken", tokenFromUrl);
-                window.history.replaceState(null, null, window.location.pathname);
-            }
-
-            // If user is already authenticated, redirect to dashboard
-            if (checkAuth()) {
-                window.location.href = "dashboard.html";
-            }
-        });
-    </script>
 </body>
 </html>

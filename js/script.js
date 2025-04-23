@@ -1,3 +1,5 @@
+import { calculateCO2Savings, fetchWithAuth, logout, getToken, isAuthenticated } from './auth.js';
+
 // Define CO2 savings constants
 const CO2_SAVINGS = {
     meat: 13.3,
@@ -25,19 +27,29 @@ if (urlToken) {
 
 // ✅ DOM ready
 document.addEventListener("DOMContentLoaded", async () => {
-    const token = sessionStorage.getItem("token");
-    if (!token) {
-        console.log("❌ No token found, redirecting to login");
-        return redirectToLogin();
+    console.log("🚀 DOMContentLoaded: Starting dashboard page initialization..."); 
+    // Use isAuthenticated from auth.js
+    if (!isAuthenticated()) { 
+        console.log("❌ No token/auth, redirecting to login");
+        return redirectToLogin(); // Keep existing redirect helper if it does more
     }
+    console.log("✅ Token found, loading dashboard");
 
-    console.log("✅ Token found, loading pantry");
-    
+    // --- Attach Logout Listener --- 
+    const logoutButtons = document.querySelectorAll('button'); 
+    logoutButtons.forEach(button => {
+        if (button.textContent.toLowerCase() === 'logout') { 
+            button.addEventListener('click', logout);
+            console.log("🚀 Logout listener attached (dashboard).");
+        }
+    });
+    // --- End Attach Logout Listener --- 
+
     try {
         // Verify token is valid by checking profile
         const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, {
             headers: { 
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${urlToken}`,
                 'Content-Type': 'application/json'
             },
             credentials: 'include'
@@ -61,8 +73,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        // Load pantry if authentication is successful
-        loadPantry();
+        // Load pantry
+        await loadPantry(); 
         
         // Setup UI event listeners
         document.getElementById("addIngredientBtn")?.addEventListener("click", () => showModal("add"));
@@ -74,9 +86,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.body.style.overflow = "auto";
         }, 50);
 
+        console.log("🚀 DOMContentLoaded: Dashboard initialization complete."); 
+
     } catch (error) {
-        console.error("❌ Authentication error:", error);
-        sessionStorage.removeItem("token");
+        console.error("❌ Dashboard Initialization/Auth error:", error);
+        // Use removeToken from auth.js before redirecting
+        removeToken(); 
         redirectToLogin();
     }
 });
@@ -223,30 +238,31 @@ async function removeIngredient(id) {
 
 /* 🔹 Load Pantry */
 async function loadPantry() {
-  const token = sessionStorage.getItem("token");
-  if (!token) return redirectToLogin();
+    const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+    if (!token) return redirectToLogin();
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/ingredients`, {
-      credentials: 'include',
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/ingredients`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to load pantry");
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const ingredients = await response.json();
+
+        const totalCo2Saved = calculateCO2Savings(ingredients);
+        const co2DisplayElement = document.getElementById('co2-saved-value');
+        if (co2DisplayElement) {
+            co2DisplayElement.textContent = totalCo2Saved.toFixed(1);
+            console.log(` pantry display`, totalCo2Saved);
+        }
+
+        updatePantryUI(ingredients);
+    } catch (err) {
+        console.error("❌ Error loading pantry:", err);
+        alert(err.message || "Failed to load pantry");
     }
-
-    const ingredients = await response.json();
-    updatePantryUI(ingredients);
-    updateCO2Component(ingredients);
-  } catch (err) {
-    console.error("❌ Error loading pantry:", err);
-    alert(err.message || "Failed to load pantry");
-  }
 }
 
 /* 🔹 Update CO₂ UI */
@@ -325,13 +341,6 @@ document.addEventListener("scroll", () => {
   if (pantry) pantry.style.transform = `translateY(${Math.max(0, scrollY - window.innerHeight)}px)`;
   if (hero) hero.style.opacity = Math.max(0, 1 - scrollY / window.innerHeight);
 });
-
-/* 🔹 Calculate Total CO₂ Saved */
-function calculateCO2Savings(ingredients) {
-  return ingredients
-    .reduce((total, item) => total + (CO2_SAVINGS[item.category] || 0), 0)
-    .toFixed(2);
-}
 
 /* 🔹 Redirect Helper */
 function redirectToLogin() {

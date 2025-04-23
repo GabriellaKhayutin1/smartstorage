@@ -39,11 +39,14 @@ import { createStripeCustomer } from './services/stripeService.js';
 import paymentsRoutes from './routes/paymentsRoutes.js';
 
 import checkSubscription from "./middleware/subscriptionMiddleware.js";
+import { addEventToCalendar } from './services/calendarService.js';
 
 const app = express();
 
 // ✅ CORS Configuration
 const allowedOrigins = [
+    'http://localhost:5503',
+    'http://127.0.0.1:5503',
     'http://localhost:5504',
     'http://127.0.0.1:5504',
     'http://localhost:5003',
@@ -66,14 +69,14 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'authToken']
 }));
 
 // Add security headers
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, authToken');
     
     // Add CSP headers for Stripe
     res.header(
@@ -84,7 +87,7 @@ app.use((req, res, next) => {
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https://*.stripe.com; " +
         "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.stripe.com; " +
-        "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://r.stripe.com https://*.stripe.com; "
+        "connect-src 'self' http://localhost:5503 http://localhost:5003 https://api.stripe.com https://merchant-ui-api.stripe.com https://r.stripe.com https://*.stripe.com; "
     );
     next();
 });
@@ -422,28 +425,56 @@ app.post("/api/calculate-co2", authenticate, async (req, res) => {
 // ✅ Add Ingredients Endpoint
 app.post("/api/ingredients", authenticate, async (req, res) => {
     try {
-        const { name, expiryDate, quantity, weight, unit, category } = req.body;
+        const { name, expiryDate, category } = req.body; // Removed quantity, weight, unit from destructuring if not needed elsewhere
         const userId = req.user.userId;
+        const addedDate = new Date();
 
-        console.log("➕ Adding ingredient for user:", userId, req.body);
+        console.log(`➕ Adding ingredient for user: ${userId}`, { name, expiryDate, category }); // Log relevant input
+
+        // --- Calculate CO2 Saving Based ONLY on Category --- 
+        let potentialCO2Saved = 0;
+        const co2Factor = category ? (CO2_SAVINGS[category] || 0) : 0; // Get factor for category
+        potentialCO2Saved = co2Factor; // Use the factor directly
+        console.log(`CO2 Factor for category '${category}': ${co2Factor}`);
+        console.log(`Calculated potential CO2 saving (Category Based): ${potentialCO2Saved.toFixed(2)} kg`);
+        // --- End Calculation --- 
 
         const newIngredient = new Ingredient({
             userId,
             name,
             expiryDate,
-            quantity,
-            weight,
-            unit,
+            // Remove quantity, weight, unit if not needed for the model
             category,
+            co2Saved: potentialCO2Saved, // Store category-based saving
         });
 
         await newIngredient.save();
-        console.log("✅ Ingredient saved:", newIngredient);
+        console.log("✅ Ingredient saved to Ingredient collection:", newIngredient._id);
 
-        // Log event in analytics
+        // --- Update Monthly CO2 for current month --- 
+        if (potentialCO2Saved > 0) {
+            const currentMonth = addedDate.getMonth() + 1;
+            const currentYear = addedDate.getFullYear();
+            console.log(`Attempting to update MonthlyCO2 for ${userId}, Month: ${currentMonth}, Year: ${currentYear}`);
+
+            const updateResult = await MonthlyCO2.findOneAndUpdate(
+                { userId: userId, month: currentMonth, year: currentYear },
+                {
+                    $inc: { co2Saved: potentialCO2Saved, itemsCount: 1 }, // Increment using category-based value
+                    $push: { ingredients: { name: newIngredient.name, category: newIngredient.category, co2Saved: potentialCO2Saved } }
+                },
+                { upsert: true, new: true, setDefaultsOnInsert: true }
+            );
+            console.log(`✅ MonthlyCO2 Update Result:`, updateResult ? `Doc ID: ${updateResult._id}, New CO2: ${updateResult.co2Saved.toFixed(2)}` : 'Update Failed or No Change');
+        } else {
+            console.log('Skipping MonthlyCO2 update because potentialCO2Saved is 0.');
+        }
+        // --- End Monthly CO2 Update --- 
+
+        // Log event in analytics (using only relevant fields)
         await Analytics.findOneAndUpdate(
             { userId },
-            { $push: { addedIngredients: { name, date: new Date(), weight } } },
+            { $push: { addedIngredients: { name, date: addedDate } } }, // Removed weight if not needed
             { upsert: true, new: true }
         );
 
@@ -488,6 +519,7 @@ app.delete("/api/ingredients/:id", authenticate, async (req, res) => {
         const { id } = req.params;
         const userId = req.user.userId;
         const { used } = req.query; // Check if the item was used or discarded
+        const usedDate = new Date(); // Record the date/time of deletion/use
 
         console.log(`🗑️ Deleting ingredient ${id} for user ${userId}. Used: ${used}`);
 
@@ -500,14 +532,45 @@ app.delete("/api/ingredients/:id", authenticate, async (req, res) => {
 
         // Log event in analytics
         const analyticsUpdate = used === 'true'
-            ? { $push: { usedIngredients: { name: ingredient.name, date: new Date(), weight: ingredient.weight, usedDate: new Date() } } }
-            : { $push: { discardedIngredients: { name: ingredient.name, date: new Date(), weight: ingredient.weight } } };
+            ? { $push: { usedIngredients: { name: ingredient.name, date: usedDate, weight: ingredient.weight, usedDate: usedDate } } } // Ensure usedDate is logged
+            : { $push: { discardedIngredients: { name: ingredient.name, date: usedDate, weight: ingredient.weight } } };
 
         await Analytics.findOneAndUpdate(
             { userId },
             analyticsUpdate,
             { upsert: true, new: true }
         );
+
+        // --- Update Monthly CO2 if ingredient was used --- 
+        if (used === 'true' && ingredient.weight) {
+            const ingredientCO2Factor = CO2_SAVINGS[ingredient.category] || 0; // Use category for CO2 factor
+            const ingredientCO2Saved = (ingredient.weight / 1000) * ingredientCO2Factor; // Calculate CO2 saved for this item
+            
+            if (ingredientCO2Saved > 0) {
+                const usageMonth = usedDate.getMonth() + 1; // 1-12
+                const usageYear = usedDate.getFullYear();
+
+                await MonthlyCO2.findOneAndUpdate(
+                    { userId: userId, month: usageMonth, year: usageYear },
+                    {
+                        $inc: { // Increment values
+                            co2Saved: ingredientCO2Saved,
+                            itemsCount: 1
+                        },
+                        $push: { // Add ingredient details
+                            ingredients: {
+                                name: ingredient.name,
+                                category: ingredient.category,
+                                co2Saved: ingredientCO2Saved
+                            }
+                        }
+                    },
+                    { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not exists
+                );
+                console.log(`✅ Updated MonthlyCO2 for ${usageYear}-${usageMonth}: +${ingredientCO2Saved.toFixed(2)} kg`);
+            }
+        }
+        // --- End Monthly CO2 Update --- 
 
         console.log("✅ Ingredient deleted:", id);
         res.json({ message: "Ingredient deleted successfully" });
@@ -561,6 +624,53 @@ app.post("/api/test-calendar-event", authenticate, async (req, res) => {
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "index.html"));
 });
+
+// --- Background Task: Check for expiring ingredients --- 
+const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // Check every 6 hours
+
+async function checkAndNotifyExpiringIngredients() {
+    console.log(`⏰ Running check for expiring ingredients... (${new Date().toISOString()})`);
+    try {
+        const today = new Date();
+        const threeDaysFromNow = new Date();
+        threeDaysFromNow.setDate(today.getDate() + 3);
+
+        // Find ingredients expiring within the next 3 days that don't have a calendarEventId yet
+        const expiringIngredients = await Ingredient.find({
+            expiryDate: { $gte: today, $lte: threeDaysFromNow },
+            calendarEventId: { $exists: false } // Only find items without an event ID
+        }).populate('userId', 'refreshToken'); // Populate user info needed for calendar event
+
+        console.log(`⏰ Found ${expiringIngredients.length} ingredients expiring soon without notifications.`);
+
+        for (const ingredient of expiringIngredients) {
+            if (ingredient.userId && ingredient.userId.refreshToken) {
+                const eventId = await addEventToCalendar(ingredient.userId._id, ingredient);
+                if (eventId) {
+                    // Save the event ID to the ingredient to prevent duplicates
+                    ingredient.calendarEventId = eventId;
+                    await ingredient.save();
+                    console.log(`⏰ Updated ingredient ${ingredient._id} with calendarEventId: ${eventId}`);
+                }
+            } else {
+                console.warn(`⏰ Skipping calendar notification for ingredient ${ingredient._id} due to missing user or refresh token.`);
+            }
+        }
+        console.log(`⏰ Finished checking for expiring ingredients.`);
+
+    } catch (error) {
+        console.error('❌ Error during background check for expiring ingredients:', error);
+    }
+}
+
+// Run the check once on startup (after a short delay to allow connection)
+setTimeout(() => {
+    checkAndNotifyExpiringIngredients(); 
+    // Set interval to run periodically
+    setInterval(checkAndNotifyExpiringIngredients, CHECK_INTERVAL_MS);
+    console.log(`⏰ Background check for expiring ingredients scheduled every ${CHECK_INTERVAL_MS / (60 * 60 * 1000)} hours.`);
+}, 30 * 1000); // Wait 30 seconds after start before first check
+// --- End Background Task --- 
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5003;

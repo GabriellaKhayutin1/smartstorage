@@ -4,37 +4,7 @@ import authenticate from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Get monthly analytics
-router.get('/monthly', authenticate, async (req, res) => {
-    try {
-        const { month, year } = req.query;
-        const currentDate = new Date();
-        const targetMonth = month || currentDate.getMonth() + 1;
-        const targetYear = year || currentDate.getFullYear();
-
-        let analytics = await Analytics.findOne({
-            userId: req.user.userId,
-            month: targetMonth,
-            year: targetYear
-        });
-
-        if (!analytics) {
-            // If no analytics exist for this month, create a new one
-            analytics = new Analytics({
-                userId: req.user.userId,
-                month: targetMonth,
-                year: targetYear,
-                tips: generateTips()
-            });
-            await analytics.save();
-        }
-
-        res.json(analytics);
-    } catch (error) {
-        console.error('Error fetching monthly analytics:', error);
-        res.status(500).json({ error: 'Failed to fetch analytics' });
-    }
-});
+// Route removed - now handled in profileRoutes.js
 
 // Get historical analytics
 router.get('/historical', authenticate, async (req, res) => {
