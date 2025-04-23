@@ -1,16 +1,29 @@
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables with absolute path
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// Log environment variables for debugging
+console.log('Environment variables loaded:', {
+    STRIPE_SECRET_KEY_PREFIX: process.env.STRIPE_SECRET_KEY?.substring(0, 8),
+    STRIPE_PREMIUM_PRICE_ID: process.env.STRIPE_PREMIUM_PRICE_ID?.substring(0, 8),
+    NODE_ENV: process.env.NODE_ENV,
+});
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from 'connect-mongo';
-import path from "path";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import stripe from "stripe";
 
 import authRoutes from "./routes/authRoutes.js";
 import leaderboardRoutes from "./routes/leaderboard.js";
@@ -22,48 +35,62 @@ import User from "./models/User.js";
 import Analytics from "./models/Analytics.js";
 import MonthlyCO2 from "./models/MonthlyCO2.js";
 import { CO2_SAVINGS } from "./constants/co2Calculator.js";
-import paymentRoutes from './routes/paymentRoutes.js';
-import { createMollieClient } from '@mollie/api-client';
+import { createStripeCustomer } from './services/stripeService.js';
+import paymentsRoutes from './routes/paymentsRoutes.js';
 
 import checkSubscription from "./middleware/subscriptionMiddleware.js";
 
-const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
-
-
-
-dotenv.config(); // Load environment variables
 const app = express();
 
-// ✅ CORS Configuration (Fixing Issues)
+// ✅ CORS Configuration
 const allowedOrigins = [
-    "http://127.0.0.1:5502",
-    "https://smartstorage-k0v4.onrender.com"
-  ];
-  
-  const corsOptions = {
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+    'http://localhost:5504',
+    'http://127.0.0.1:5504',
+    'http://localhost:5003',
+    'http://127.0.0.1:5003',
+    'https://smartstorage-k0v4.onrender.com'
+];
+
+// Configure CORS
+app.use(cors({
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            console.log('❌ Origin not allowed by CORS:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  };
-app.use(cors(corsOptions));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// ✅ Explicitly Handle Preflight Requests
-app.options("*", (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:5502");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.status(204).end(); // Respond with 204 No Content
+// Add security headers
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Add CSP headers for Stripe
+    res.header(
+        'Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://api.stripe.com https://*.stripe.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.stripe.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "img-src 'self' data: https://*.stripe.com; " +
+        "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.stripe.com; " +
+        "connect-src 'self' https://api.stripe.com https://merchant-ui-api.stripe.com https://r.stripe.com https://*.stripe.com; "
+    );
+    next();
 });
 
 // ✅ Middleware
+app.use('/api/payments/webhook', express.raw({type: 'application/json'}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -95,7 +122,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/analytics", analyticsRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // ✅ Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -145,6 +172,7 @@ app.get("/oauthcallback", async (req, res) => {
         const oauth2 = google.oauth2({ version: "v2", auth: oAuth2Client });
         const userInfo = await oauth2.userinfo.get();
         const email = userInfo.data.email;
+        const name = userInfo.data.name || "Google User"; // Get name
 
         // Check if user exists in DB, create if not
         let user = await User.findOne({ email });
@@ -152,35 +180,75 @@ app.get("/oauthcallback", async (req, res) => {
         if (!user) {
             console.log("👤 Creating new user with refresh token");
 
-            // 1. Create Mollie Customer
-            const mollieCustomer = await mollieClient.customers.create({
-                name: userInfo.data.name || "Google User",
-                email,
-            });
+            // 1. Create Stripe Customer
+            const stripeCustomer = await createStripeCustomer(email, name);
+            if (!stripeCustomer) {
+                throw new Error("Failed to create Stripe customer");
+            }
 
-            // 2. Create new User with trial & Mollie customer
+            // 2. Create new User with trial & Stripe customer ID
             user = new User({
                 googleId: userInfo.data.id,
                 email,
+                name, // Save name
                 refreshToken: tokens.refresh_token,
                 trialStart: new Date(),
                 trialEnds: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
                 subscriptionStatus: "trial",
-                mollieCustomerId: mollieCustomer.id,
+                stripeCustomerId: stripeCustomer.id, // Use Stripe ID
             });
 
-            console.log("✅ Mollie customer created:", mollieCustomer.id);
+            console.log("✅ Stripe customer created:", stripeCustomer.id);
         } else {
             console.log("👤 Updating existing user's refresh token");
             user.refreshToken = tokens.refresh_token;
+
+            // Ensure existing user has a Stripe Customer ID
+            if (!user.stripeCustomerId) {
+                console.log(" Stripe Customer ID missing for existing user. Creating...");
+                const stripeCustomer = await createStripeCustomer(user.email, user.name);
+                if (!stripeCustomer) {
+                    console.error("❌ Failed to create Stripe customer for existing user:", user.email);
+                    // Decide how to handle this - maybe proceed without Stripe ID or throw error?
+                    // For now, we log the error and proceed.
+                } else {
+                    user.stripeCustomerId = stripeCustomer.id;
+                    console.log("✅ Stripe Customer ID created and added to existing user:", user.stripeCustomerId);
+                     // Optionally, update Stripe customer metadata here if needed
+                     const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
+                    try {
+                        await stripeClient.customers.update(stripeCustomer.id, {
+                            metadata: { userId: user._id.toString() }
+                        });
+                        console.log(`✅ Updated Stripe customer ${stripeCustomer.id} metadata with userId: ${user._id.toString()}`);
+                    } catch (stripeError) {
+                        console.error(`❌ Failed to update Stripe customer metadata for ${stripeCustomer.id}:`, stripeError);
+                    }
+                }
+            } else {
+                 // Optionally, ensure metadata is up-to-date even if customer ID exists
+                 const stripeClient = new stripe(process.env.STRIPE_SECRET_KEY);
+                 try {
+                     const customer = await stripeClient.customers.retrieve(user.stripeCustomerId);
+                     if (!customer.metadata || customer.metadata.userId !== user._id.toString()) {
+                         await stripeClient.customers.update(user.stripeCustomerId, {
+                             metadata: { userId: user._id.toString() }
+                         });
+                         console.log(`✅ Updated Stripe customer ${user.stripeCustomerId} metadata with userId: ${user._id.toString()}`);
+                     }
+                 } catch (stripeError) {
+                     console.error(`❌ Failed to retrieve or update Stripe customer metadata for ${user.stripeCustomerId}:`, stripeError);
+                 }
+            }
         }
 
 
         await user.save();
-        console.log("✅ User saved with refresh token:", {
+        console.log("✅ User saved/updated:", {
             userId: user._id,
             email: user.email,
-            hasRefreshToken: !!user.refreshToken
+            hasRefreshToken: !!user.refreshToken,
+            stripeCustomerId: user.stripeCustomerId
         });
 
         // Generate a JWT for the user
@@ -194,17 +262,21 @@ app.get("/oauthcallback", async (req, res) => {
         res.cookie("access_token", tokens.access_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 3600 * 1000
+            maxAge: 3600 * 1000,
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
         });
 
-        const frontendRedirect = process.env.NODE_ENV === 'production'
-  ? "https://smartstorage-k0v4.onrender.com/dashboard.html"
-  : "http://127.0.0.1:5502/dashboard.html";
+        // Use FRONTEND_URL for redirect
+        const finalFrontendRedirect = process.env.NODE_ENV === 'production'
+            ? "https://smartstorage-k0v4.onrender.com/dashboard.html"
+            : `${process.env.FRONTEND_URL}/dashboard.html`;
 
-res.redirect(`${frontendRedirect}?token=${jwtToken}`);
+        console.log("🔄 Redirecting to Frontend URL:", finalFrontendRedirect);
+        res.redirect(`${finalFrontendRedirect}?token=${jwtToken}`);
+
     } catch (error) {
         console.error("❌ OAuth Callback Error:", error);
-        res.status(500).send("Authentication failed.");
+        res.status(500).send(`Authentication failed: ${error.message}`);
     }
 });
 
@@ -233,190 +305,172 @@ app.get("/api/debug/user", authenticate, async (req, res) => {
         email: user.email,
         trialStart: user.trialStart,
         trialEnds: user.trialEnds,
-        subscriptionStatus: user.subscriptionStatus
+        subscriptionStatus: user.subscriptionStatus,
+        stripeCustomerId: user.stripeCustomerId, // Show Stripe ID
+        stripeSubscriptionId: user.stripeSubscriptionId
     });
 });
 
 // ✅ Get Profile Info (used to show trial countdown on frontend)
 app.get("/api/profile", authenticate, async (req, res) => {
-    const user = await User.findById(req.user.userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
-  
-    res.json({
-      email: user.email,
-      name: user.name,
-      subscriptionStatus: user.subscriptionStatus,
-      trialStart: user.trialStart,
-      trialEnds: user.trialEnds
-    });
-  });
-  
-
-
-// ✅ Add New Ingredient
-app.post("/api/ingredients", authenticate, async (req, res) => {
     try {
-        const { name, category, expiryDate } = req.body;
-
-        // Validate required fields
-        if (!name || !category || !expiryDate) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
-         // Calculate CO2 saved for this ingredient
-         const co2SavedForIngredient = CO2_SAVINGS[category] || 0;
-
-
-        // Create new ingredient
-        const ingredient = new Ingredient({
-            userId: req.user.userId,
-            name,
-            category,
-            expiryDate: new Date(expiryDate),
-            co2Saved: co2SavedForIngredient // ✅ Add this line
-        });
-
-        // Save to database
-        await ingredient.save();
-        console.log("✅ New ingredient added:", ingredient);
-
-        // Update monthly CO2 savings
-        const currentDate = new Date();
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
-
-        // Find or create monthly CO2 record
-        let monthlyCO2 = await MonthlyCO2.findOne({
-            userId: req.user.userId,
-            month,
-            year
-        });
-
-        if (!monthlyCO2) {
-            monthlyCO2 = new MonthlyCO2({
-                userId: req.user.userId,
-                month,
-                year
-            });
-        }
-        // Update monthly totals
-        monthlyCO2.co2Saved += co2SavedForIngredient;
-        monthlyCO2.itemsCount += 1;
-        monthlyCO2.ingredients.push({
-            name,
-            category,
-            co2Saved: co2SavedForIngredient
-        });
-
-        await monthlyCO2.save();
-        console.log("✅ Monthly CO2 savings updated:", monthlyCO2);
-
-        // Get user to access refresh token
         const user = await User.findById(req.user.userId);
-        console.log("🔍 Found user:", {
-            id: user._id,
-            email: user.email,
-            hasRefreshToken: !!user.refreshToken
-        });
-
-        if (user && user.refreshToken) {
-            try {
-                console.log("🔄 Starting calendar event creation process...");
-
-                // Set up OAuth2 client with user's refresh token
-                oAuth2Client.setCredentials({ refresh_token: user.refreshToken });
-
-                // Create calendar event
-                const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
-
-                // Calculate reminder date (2 days before expiry)
-                const reminderDate = new Date(ingredient.expiryDate);
-                reminderDate.setDate(reminderDate.getDate() - 2);
-
-                // Format dates for display
-                const formattedExpiryDate = ingredient.expiryDate.toLocaleDateString();
-                const formattedReminderDate = reminderDate.toLocaleDateString();
-
-                console.log('📅 Event details:', {
-                    ingredient: ingredient.name,
-                    expiryDate: formattedExpiryDate,
-                    reminderDate: formattedReminderDate
-                });
-
-                const event = {
-                    summary: `⚠️ ${ingredient.name} is expiring soon!`,
-                    description: `Your ${ingredient.name} (${ingredient.category}) will expire on ${formattedExpiryDate}.\n\nReminder set for: ${formattedReminderDate}`,
-                    start: {
-                        dateTime: reminderDate.toISOString(),
-                        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    },
-                    end: {
-                        dateTime: new Date(reminderDate.getTime() + 60 * 60 * 1000).toISOString(),
-                        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    },
-                    reminders: {
-                        useDefault: false,
-                        overrides: [
-                            { method: 'email', minutes: 24 * 60 },
-                            { method: 'popup', minutes: 60 },
-                        ],
-                    },
-                };
-
-                console.log('📝 Creating calendar event with details:', {
-                    summary: event.summary,
-                    start: event.start.dateTime,
-                    end: event.end.dateTime,
-                    timeZone: event.start.timeZone
-                });
-
-                const response = await calendar.events.insert({
-                    calendarId: 'primary',
-                    resource: event,
-                    sendUpdates: 'all'
-                });
-
-                console.log('✅ Calendar event created successfully:', response.data.htmlLink);
-
-                // Store the calendar event ID in the ingredient
-                ingredient.calendarEventId = response.data.id;
-                await ingredient.save();
-                console.log('✅ Calendar event ID saved to ingredient');
-            } catch (calendarError) {
-                console.error('❌ Failed to create calendar event:', calendarError.message);
-                if (calendarError.response) {
-                    console.error('Error details:', calendarError.response.data);
-                }
-                // Don't fail the whole request if calendar event creation fails
-            }
-        } else {
-            console.log('⚠️ No refresh token found for user, skipping calendar event creation');
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        res.status(201).json(ingredient);
+        res.json({
+            email: user.email,
+            name: user.name,
+            subscriptionStatus: user.subscriptionStatus,
+            trialStart: user.trialStart,
+            trialEnds: user.trialEnds,
+            profilePicture: user.profilePicture,
+        });
     } catch (error) {
-        console.error("❌ Error adding ingredient:", error);
-        res.status(500).json({ error: "Failed to add ingredient" });
+        console.error("❌ Error fetching profile:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// ✅ Update Ingredient
-app.put("/api/ingredients/:id", authenticate, async (req, res) => {
+// Route to get CO2 savings calculation
+app.get("/api/co2-savings", authenticate, async (req, res) => {
     try {
-        const { name, category, expiryDate } = req.body;
+        const userId = req.user.userId;
+        const analytics = await Analytics.findOne({ userId });
 
-        // Validate required fields
-        if (!name || !category || !expiryDate) {
-            return res.status(400).json({ error: "Missing required fields" });
+        if (!analytics) {
+            return res.json({ co2Savings: 0, treeEquivalent: 0 });
         }
 
-        // Find and update ingredient
+        let totalCo2Savings = 0;
+
+        // Calculate CO2 savings based on used ingredients
+        analytics.usedIngredients.forEach(ingredient => {
+            const co2Factor = CO2_SAVINGS[ingredient.name.toLowerCase()];
+            if (co2Factor) {
+                totalCo2Savings += (ingredient.weight / 1000) * co2Factor; // Convert weight to kg
+            }
+        });
+
+        const treeEquivalent = totalCo2Savings / 21; // Approximate CO2 absorption per tree per year
+
+        res.json({
+            co2Savings: totalCo2Savings.toFixed(2),
+            treeEquivalent: treeEquivalent.toFixed(2)
+        });
+    } catch (error) {
+        console.error("❌ Error fetching CO2 savings:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// Endpoint to manually trigger CO2 calculation for a user
+app.post("/api/calculate-co2", authenticate, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const analytics = await Analytics.findOne({ userId });
+
+        if (!analytics) {
+            return res.status(404).json({ message: "No analytics data found for this user." });
+        }
+
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        let monthlyCo2Savings = 0;
+
+        // Calculate CO2 savings for used ingredients within the current month
+        analytics.usedIngredients.forEach(ingredient => {
+            if (ingredient.usedDate >= startOfMonth && ingredient.usedDate <= endOfMonth) {
+                const co2Factor = CO2_SAVINGS[ingredient.name.toLowerCase()];
+                if (co2Factor) {
+                    monthlyCo2Savings += (ingredient.weight / 1000) * co2Factor; // Convert weight to kg
+                }
+            }
+        });
+
+        // Find or create monthly CO2 record
+        let monthlyRecord = await MonthlyCO2.findOne({
+            userId,
+            month: startOfMonth
+        });
+
+        if (!monthlyRecord) {
+            monthlyRecord = new MonthlyCO2({
+                userId,
+                month: startOfMonth,
+                co2Saved: monthlyCo2Savings
+            });
+        } else {
+            monthlyRecord.co2Saved = monthlyCo2Savings; // Update if record exists
+        }
+
+        await monthlyRecord.save();
+
+        res.json({
+            message: "Monthly CO2 savings calculated successfully.",
+            co2Saved: monthlyCo2Savings.toFixed(2)
+        });
+    } catch (error) {
+        console.error("❌ Error calculating monthly CO2 savings:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Add Ingredients Endpoint
+app.post("/api/ingredients", authenticate, async (req, res) => {
+    try {
+        const { name, expiryDate, quantity, weight, unit, category } = req.body;
+        const userId = req.user.userId;
+
+        console.log("➕ Adding ingredient for user:", userId, req.body);
+
+        const newIngredient = new Ingredient({
+            userId,
+            name,
+            expiryDate,
+            quantity,
+            weight,
+            unit,
+            category,
+        });
+
+        await newIngredient.save();
+        console.log("✅ Ingredient saved:", newIngredient);
+
+        // Log event in analytics
+        await Analytics.findOneAndUpdate(
+            { userId },
+            { $push: { addedIngredients: { name, date: new Date(), weight } } },
+            { upsert: true, new: true }
+        );
+
+        res.status(201).json(newIngredient);
+    } catch (error) {
+        console.error("❌ Error adding ingredient:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+// ✅ Update Ingredient Endpoint
+app.put("/api/ingredients/:id", authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        const userId = req.user.userId;
+
+        console.log(`🔄 Updating ingredient ${id} for user ${userId}`, updateData);
+
         const ingredient = await Ingredient.findOneAndUpdate(
-            { _id: req.params.id, userId: req.user.userId },
-            { name, category, expiryDate: new Date(expiryDate) },
+            { _id: id, userId },
+            updateData,
             { new: true }
         );
 
         if (!ingredient) {
+            console.log("❌ Ingredient not found or user mismatch");
             return res.status(404).json({ error: "Ingredient not found" });
         }
 
@@ -424,155 +478,91 @@ app.put("/api/ingredients/:id", authenticate, async (req, res) => {
         res.json(ingredient);
     } catch (error) {
         console.error("❌ Error updating ingredient:", error);
-        res.status(500).json({ error: "Failed to update ingredient" });
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// ✅ Delete Ingredient
+// ✅ Delete Ingredient Endpoint
 app.delete("/api/ingredients/:id", authenticate, async (req, res) => {
     try {
-        const ingredient = await Ingredient.findOneAndDelete({
-            _id: req.params.id,
-            userId: req.user.userId
-        });
+        const { id } = req.params;
+        const userId = req.user.userId;
+        const { used } = req.query; // Check if the item was used or discarded
+
+        console.log(`🗑️ Deleting ingredient ${id} for user ${userId}. Used: ${used}`);
+
+        const ingredient = await Ingredient.findOneAndDelete({ _id: id, userId });
 
         if (!ingredient) {
+            console.log("❌ Ingredient not found or user mismatch");
             return res.status(404).json({ error: "Ingredient not found" });
         }
 
-        // Track waste in analytics
-        const currentDate = new Date();
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
+        // Log event in analytics
+        const analyticsUpdate = used === 'true'
+            ? { $push: { usedIngredients: { name: ingredient.name, date: new Date(), weight: ingredient.weight, usedDate: new Date() } } }
+            : { $push: { discardedIngredients: { name: ingredient.name, date: new Date(), weight: ingredient.weight } } };
 
-        // Find or create analytics for current month
-        let analytics = await Analytics.findOne({
-            userId: req.user.userId,
-            month,
-            year
-        });
+        await Analytics.findOneAndUpdate(
+            { userId },
+            analyticsUpdate,
+            { upsert: true, new: true }
+        );
 
-        if (!analytics) {
-            analytics = new Analytics({
-                userId: req.user.userId,
-                month,
-                year
-            });
-        }
-
-        // Update analytics with wasted food
-        analytics.totalFoodWasted += 1;
-        analytics.totalMoneyWasted += ingredient.estimatedCost || 0;
-
-        // Add to wasted foods list
-        analytics.wastedFoods.push({
-            name: ingredient.name,
-            category: ingredient.category,
-            amount: 1,
-            estimatedCost: ingredient.estimatedCost || 0
-        });
-
-        await analytics.save();
-
-        console.log("✅ Ingredient deleted and waste tracked:", ingredient);
+        console.log("✅ Ingredient deleted:", id);
         res.json({ message: "Ingredient deleted successfully" });
     } catch (error) {
         console.error("❌ Error deleting ingredient:", error);
-        res.status(500).json({ error: "Failed to delete ingredient" });
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// ✅ Refresh Access Token using Stored Refresh Token
-app.get("/refresh_token", authenticate, async (req, res) => {
+// Fetch ingredients near expiry
+app.get("/api/ingredients/near-expiry", authenticate, async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId);
-        if (!user || !user.refreshToken) {
-            return res.status(400).json({ error: "No refresh token found" });
-        }
+        const userId = req.user.userId;
+        const today = new Date();
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(today.getDate() + 3);
 
-        oAuth2Client.setCredentials({ refresh_token: user.refreshToken });
-        const { credentials } = await oAuth2Client.refreshAccessToken();
-        const newAccessToken = credentials.access_token;
+        const nearExpiryIngredients = await Ingredient.find({
+            userId: userId,
+            expiryDate: { $gte: today, $lte: threeDaysFromNow }
+        }).sort({ expiryDate: 1 }); // Sort by soonest expiry
 
-        // Set the new access token in an HTTP-only cookie
-        res.cookie("access_token", newAccessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 3600 * 1000
-        });
-
-        res.json({ message: "Access token refreshed successfully" });
+        res.json(nearExpiryIngredients);
     } catch (error) {
-        console.error("❌ Error refreshing access token:", error);
-        res.status(500).json({ error: "Failed to refresh access token" });
+        console.error("❌ Error fetching near-expiry ingredients:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// ✅ Get Monthly CO2 Savings
-app.get("/api/co2-savings/monthly", authenticate, async (req, res) => {
+// Route to manually trigger calendar event creation for testing (Commented out as it depends on calendarService)
+/*
+app.post("/api/test-calendar-event", authenticate, async (req, res) => {
     try {
-        const { year } = req.query;
-        const queryYear = parseInt(year) || new Date().getFullYear();
+        const userId = req.user.userId;
+        // Example: Create an event for a fake ingredient expiring tomorrow
+        const fakeIngredient = {
+            name: "Test Item",
+            expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // Expires tomorrow
+        };
 
-        // Get all ingredients for the user, without date filtering
-        const ingredients = await Ingredient.find({
-            userId: req.user.userId
-        });
-
-        console.log(`Found ${ingredients.length} ingredients for user`);
-
-        // Initialize monthly data
-        const monthlySavings = Array.from({ length: 12 }, (_, i) => ({
-            month: i + 1,
-            co2Saved: 0,
-            itemsCount: 0,
-            ingredients: []
-        }));
-
-        // Calculate CO2 savings for each ingredient
-        ingredients.forEach(ingredient => {
-            const createdAt = new Date(ingredient.createdAt);
-            const ingredientYear = createdAt.getFullYear();
-
-            // Only include in monthly breakdown if it's from the requested year
-            if (ingredientYear === queryYear) {
-                const month = createdAt.getMonth();
-                const co2SavedForIngredient = CO2_SAVINGS[ingredient.category] || 0;
-
-                monthlySavings[month].co2Saved += co2SavedForIngredient;
-                monthlySavings[month].itemsCount += 1;
-                monthlySavings[month].ingredients.push({
-                    name: ingredient.name,
-                    category: ingredient.category,
-                    co2Saved: co2SavedForIngredient,
-                    createdAt: ingredient.createdAt
-                });
-
-                console.log(`Added ${ingredient.name} (${ingredient.category}) with ${co2SavedForIngredient}kg CO2 to month ${month + 1}`);
-            }
-        });
-
-        console.log('Monthly savings calculated:', monthlySavings.map(m => ({
-            month: m.month,
-            co2Saved: m.co2Saved,
-            itemsCount: m.itemsCount
-        })));
-
-        res.json(monthlySavings);
+        const result = await addEventToCalendar(userId, fakeIngredient);
+        res.json({ message: "Test event creation attempted", result });
     } catch (error) {
-        console.error("❌ Error fetching monthly CO2 savings:", error);
-        res.status(500).json({ error: "Failed to fetch monthly CO2 savings" });
+        console.error("❌ Error creating test calendar event:", error);
+        res.status(500).json({ error: "Failed to create test event" });
     }
 });
-// ✅ With this:
-app.use(express.static(path.join(__dirname, '..'))); // Serve from root
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
+*/
+
+// Serve index.html for any other routes (useful for SPA routing)
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
-// ✅ Server Setup
+// ✅ Start Server
 const PORT = process.env.PORT || 5003;
-app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
-  });
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
   

@@ -3,160 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Payment Status - Smart Storage</title>
-  <link href="css/style.css" rel="stylesheet"/>
-  <link rel="shortcut icon" href="images/logo.png" type="image/png"/>
-  <link rel="apple-touch-icon" href="images/logo.png"/>
+  <title>Payment Status - Smart Pantry</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .btn-primary {
+      background: #22C55E;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #1EA34D;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #22C55E;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-gray-50 hidden">
-  <div class="min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <div class="flex-shrink-0 flex items-center">
-              <a href="/" class="text-2xl font-bold text-green-600">Smart Storage</a>
-            </div>
-          </div>
-        </div>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full mx-auto px-4">
+    <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div id="loading" class="mb-8">
+        <div class="spinner mx-auto mb-4"></div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Processing Payment</h2>
+        <p class="text-gray-600">Please wait while we confirm your subscription...</p>
       </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div class="px-4 py-6 sm:px-0">
-        <div class="bg-white rounded-lg shadow p-6">
-          <h1 class="text-2xl font-bold text-gray-900 mb-6">Payment Status</h1>
-
-          <div id="paymentStatus" class="text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p class="mt-4 text-gray-600">Checking payment status...</p>
-          </div>
+      <div id="success" class="hidden mb-8">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
         </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+        <p class="text-gray-600 mb-6">Your subscription has been activated. You can now access all premium features.</p>
+        <a href="/dashboard.html" class="btn-primary">
+          Go to Dashboard
+          <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
       </div>
-    </main>
+
+      <div id="error" class="hidden mb-8">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h2>
+        <p class="text-gray-600 mb-6">We couldn't process your payment. Please try again or contact support.</p>
+        <a href="/subscribe_payment.html" class="btn-primary">
+          Try Again
+          <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </a>
+      </div>
+    </div>
   </div>
 
   <script>
-    const API_BASE_URL = window.location.hostname.includes("localhost")
-      ? "http://localhost:5003"
-      : "https://smartstorage-k0v4.onrender.com";
+    const stripe = Stripe('pk_test_51RGi59CFusp413AAv9Qh9XeVgaNVaaoeALB07uycp5tLq7vgnoerP5uPtO43yVxs818wAzNvLkPCrrFPZlpvEbS600qfdkE6cW'); // Replace with your Stripe publishable key
 
-    function checkAuth() {
-      const token = sessionStorage.getItem("token");
-      if (!token) return false;
+    // Retrieve the "payment_intent_client_secret" query parameter
+    const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret');
 
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const expiration = payload.exp * 1000;
-        if (Date.now() >= expiration) {
-          sessionStorage.removeItem("token");
-          return false;
-        }
-        return true;
-      } catch (err) {
-        console.error("Invalid token:", err);
-        return false;
+    // Retrieve the PaymentIntent
+    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
+      const loadingElement = document.getElementById('loading');
+      const successElement = document.getElementById('success');
+      const errorElement = document.getElementById('error');
+
+      switch (paymentIntent.status) {
+        case 'succeeded':
+          loadingElement.classList.add('hidden');
+          successElement.classList.remove('hidden');
+          break;
+        case 'processing':
+          // The payment is still processing
+          break;
+        case 'requires_payment_method':
+          // The payment failed or was cancelled
+          loadingElement.classList.add('hidden');
+          errorElement.classList.remove('hidden');
+          break;
+        default:
+          loadingElement.classList.add('hidden');
+          errorElement.classList.remove('hidden');
+          break;
       }
-    }
-
-    async function checkPaymentStatus() {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymentId = urlParams.get('id');
-
-        if (!paymentId) throw new Error('No payment ID found');
-
-        const token = sessionStorage.getItem('token');
-        if (!token) {
-          window.location.href = '/login.html';
-          return;
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/payments/status/${paymentId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) throw new Error('Failed to get payment status');
-
-        const data = await response.json();
-        const statusElement = document.getElementById('paymentStatus');
-
-        switch (data.status) {
-          case 'paid':
-            statusElement.innerHTML = `
-              <div class="text-green-600 text-4xl mb-4">✓</div>
-              <h2 class="text-xl font-semibold text-green-600 mb-2">Payment Successful!</h2>
-              <p class="text-gray-600">Thank you for your payment.</p>
-              <a href="/" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                Return to Home
-              </a>
-            `;
-            break;
-
-          case 'failed':
-            statusElement.innerHTML = `
-              <div class="text-red-600 text-4xl mb-4">✕</div>
-              <h2 class="text-xl font-semibold text-red-600 mb-2">Payment Failed</h2>
-              <p class="text-gray-600">Something went wrong with your payment.</p>
-              <a href="/payment.html" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                Try Again
-              </a>
-            `;
-            break;
-
-          case 'pending':
-            statusElement.innerHTML = `
-              <div class="text-yellow-600 text-4xl mb-4">⌛</div>
-              <h2 class="text-xl font-semibold text-yellow-600 mb-2">Payment Pending</h2>
-              <p class="text-gray-600">Your payment is still being processed.</p>
-              <p class="text-sm text-gray-500 mt-2">This page will refresh in 5 seconds.</p>
-            `;
-            setTimeout(checkPaymentStatus, 5000);
-            break;
-
-          default:
-            statusElement.innerHTML = `
-              <div class="text-gray-600 text-4xl mb-4">?</div>
-              <h2 class="text-xl font-semibold text-gray-600 mb-2">Unknown Status</h2>
-              <p class="text-gray-600">We couldn't determine the status of your payment.</p>
-              <a href="/payment.html" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                Try Again
-              </a>
-            `;
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('paymentStatus').innerHTML = `
-          <div class="text-red-600 text-4xl mb-4">⚠️</div>
-          <h2 class="text-xl font-semibold text-red-600 mb-2">Error</h2>
-          <p class="text-gray-600">Failed to check payment status.</p>
-          <a href="/payment.html" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-            Try Again
-          </a>
-        `;
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      // Save token from URL to sessionStorage if present
-      const tokenFromUrl = new URLSearchParams(window.location.search).get("token");
-      if (tokenFromUrl) {
-        sessionStorage.setItem("token", tokenFromUrl);
-        window.history.replaceState(null, null, window.location.pathname); // Clean URL
-      }
-
-      // Check auth
-      if (!checkAuth()) {
-        alert("You must be logged in to access this page.");
-        window.location.href = "/login.html";
-        return;
-      }
-
-      document.body.classList.remove("hidden");
-      console.log("✅ Authenticated, checking payment...");
-      checkPaymentStatus();
     });
   </script>
 </body>

@@ -155,26 +155,66 @@
       }
     }
 
+    async function checkSubscriptionStatus() {
+        try {
+            const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            const response = await fetch(`${window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:5003" : "https://smartstorage-k0v4.onrender.com"}/api/payments/check-subscription`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to check subscription status');
+            }
+
+            const data = await response.json();
+            console.log('Subscription status:', data);
+
+            if (!data.hasActiveSubscription) {
+                window.location.href = '/subscribe_payment.html';
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error checking subscription:', error);
+            return false;
+        }
+    }
+
     // ✅ This function is executed once the DOM is loaded
-    document.addEventListener("DOMContentLoaded", () => {
-      // 1. Check if token is in the URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const tokenFromUrl = urlParams.get("token");
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 1. Check if token is in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get("token");
 
-      if (tokenFromUrl) {
-        sessionStorage .setItem("authToken", tokenFromUrl);
-        window.history.replaceState(null, null, window.location.pathname);
-      }
+        if (tokenFromUrl) {
+            sessionStorage.setItem("authToken", tokenFromUrl);
+            window.history.replaceState(null, null, window.location.pathname);
+        }
 
-      // 2. Check if token is valid
-      if (!checkAuth()) {
-        alert("You must be logged in to access this page.");
-        window.location.href = "/login.html";
-      } else {
+        // 2. Check if token is valid
+        if (!checkAuth()) {
+            alert("You must be logged in to access this page.");
+            window.location.href = "/login.html";
+            return;
+        }
+
+        // 3. Check subscription status
+        const hasActiveSubscription = await checkSubscriptionStatus();
+        if (!hasActiveSubscription) {
+            return;
+        }
+
         // ✅ Show the page
         document.body.classList.remove("hidden");
-        console.log("✅ Authenticated, showing content.");
-      }
+        console.log("✅ Authenticated and subscribed, showing content.");
     });
 </script>
 

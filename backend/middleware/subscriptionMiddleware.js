@@ -8,14 +8,20 @@ const checkSubscription = async (req, res, next) => {
             return res.status(401).json({ error: "User not found" });
         }
 
-        const trialExpired = new Date() > user.trialEnds;
-        const notSubscribed = user.subscriptionStatus !== 'active';
-
-        if (trialExpired && notSubscribed) {
+        if (!user.hasActiveSubscription()) {
             return res.status(403).json({
-                error: "Your free trial has ended. Please subscribe to continue."
+                error: "Your subscription has expired. Please subscribe to continue.",
+                subscriptionStatus: user.subscriptionStatus,
+                trialEnds: user.trialEnds,
+                currentPeriodEnd: user.currentPeriodEnd
             });
         }
+
+        req.subscription = {
+            status: user.subscriptionStatus,
+            trialEnds: user.trialEnds,
+            currentPeriodEnd: user.currentPeriodEnd
+        };
 
         next();
     } catch (error) {
