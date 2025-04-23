@@ -12,19 +12,36 @@ const UserSchema = new mongoose.Schema({
         }
     },
     profilePicture: { type: String },
-    mollieCustomerId: { type: String, unique: true, sparse: true },
-    mandateId: { type: String }, // optional but helpful
-
-
-    // ✅ Trial and subscription fields
+    
+    // Stripe fields
+    stripeCustomerId: { type: String, unique: true, sparse: true },
+    stripeSubscriptionId: { type: String },
+    
+    // Trial and subscription fields
     trialStart: { type: Date },
     trialEnds: { type: Date },
+    subscriptionStart: { type: Date },
+    currentPeriodEnd: { type: Date },
     subscriptionStatus: {
         type: String,
-        enum: ["trial", "active", "inactive"],
+        enum: ["trial", "active", "inactive", "pending", "past_due", "cancelled"],
         default: "trial"
     }
 }, { timestamps: true });
 
+// Add method to check if user has active subscription
+UserSchema.methods.hasActiveSubscription = function() {
+    const now = new Date();
+    return (
+        // Check if subscription is active
+        this.subscriptionStatus === 'active' &&
+        // Check if current period hasn't ended
+        (!this.currentPeriodEnd || this.currentPeriodEnd > now)
+    ) || (
+        // Or check if trial is still valid
+        this.subscriptionStatus === 'trial' &&
+        this.trialEnds > now
+    );
+};
 
 export default mongoose.model("User", UserSchema);

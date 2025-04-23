@@ -1,49 +1,84 @@
-import { CO2_SAVINGS } from "./co2Calculator.js";
+// Define CO2 savings constants
+const CO2_SAVINGS = {
+    meat: 13.3,
+    dairy: 3.2,
+    vegetables: 0.4,
+    fruits: 0.4,
+    grains: 0.8,
+    other: 1.0
+};
 
-// ✅ Dynamic API base URL
-const API_BASE_URL = window.location.hostname.includes("localhost")
-  ? "http://localhost:5003"
-  : "https://smartstorage-k0v4.onrender.com";
+// ✅ Dynamic API base URL - Fixing the logic
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5003"
+    : "https://smartstorage-k0v4.onrender.com";
 
 // ✅ Check for token in URL
 const urlToken = new URLSearchParams(window.location.search).get("token");
 if (urlToken) {
-  sessionStorage.setItem("token", urlToken); // Store in sessionStorage for consistent usage
+    sessionStorage.setItem("token", urlToken);
+    console.log("✅ Token stored in session");
+    
+    // Remove token from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+}
 
-  fetch(`${API_BASE_URL}/api/profile`, {
-    headers: { Authorization: `Bearer ${urlToken}` },
-  })
-    .then((res) => res.json())
-    .then((user) => {
+// ✅ DOM ready
+document.addEventListener("DOMContentLoaded", async () => {
+    const token = sessionStorage.getItem("token");
+    if (!token) {
+        console.log("❌ No token found, redirecting to login");
+        return redirectToLogin();
+    }
+
+    console.log("✅ Token found, loading pantry");
+    
+    try {
+        // Verify token is valid by checking profile
+        const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, {
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        if (!profileResponse.ok) {
+            throw new Error('Profile fetch failed');
+        }
+
+        const user = await profileResponse.json();
+        console.log("✅ Profile loaded:", user.email);
+
+        // Check trial/subscription status
         const endDate = new Date(user.trialEnds);
         const today = new Date();
         const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
         const trialExpired = user.subscriptionStatus === "trial" && today > endDate;
-      
+
         if (user.subscriptionStatus === "inactive" || trialExpired) {
             window.location.href = "/subscribe_payment.html";
-          
-        } else {
-          alert(`🎉 Welcome! You have a 7-day free trial. ${daysLeft} day(s) remaining.`);
+            return;
         }
-      
-        window.history.replaceState({}, document.title, window.location.pathname);
-      })
-      
-    .catch((err) => console.error("❌ Failed to fetch profile info:", err));
-}
 
-// ✅ DOM ready
-document.addEventListener("DOMContentLoaded", () => {
-  loadPantry();
+        // Load pantry if authentication is successful
+        loadPantry();
+        
+        // Setup UI event listeners
+        document.getElementById("addIngredientBtn")?.addEventListener("click", () => showModal("add"));
+        document.getElementById("closeModalBtn")?.addEventListener("click", hideModal);
 
-  setTimeout(() => {
-    window.scrollTo(0, 0);
-    document.body.style.overflow = "auto";
-  }, 50);
+        // Fix scroll behavior
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.body.style.overflow = "auto";
+        }, 50);
 
-  document.getElementById("addIngredientBtn")?.addEventListener("click", () => showModal("add"));
-  document.getElementById("closeModalBtn")?.addEventListener("click", hideModal);
+    } catch (error) {
+        console.error("❌ Authentication error:", error);
+        sessionStorage.removeItem("token");
+        redirectToLogin();
+    }
 });
 
 /* 🔹 Show Modal */
@@ -92,20 +127,24 @@ async function addIngredient() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/ingredients`, {
       method: "POST",
+      credentials: 'include',
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         name,
         category,
-        expiryDate: new Date(expiryDate).toISOString(),
-      }),
+        expiryDate: new Date(expiryDate).toISOString()
+      })
     });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Add failed");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Add failed");
+    }
 
+    const data = await response.json();
     hideModal();
     loadPantry();
   } catch (err) {
@@ -128,22 +167,28 @@ async function updateIngredient(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/ingredients/${id}`, {
       method: "PUT",
+      credentials: 'include',
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         name,
         category,
-        expiryDate: new Date(expiryDate).toISOString(),
-      }),
+        expiryDate: new Date(expiryDate).toISOString()
+      })
     });
 
-    if (!response.ok) throw new Error("Update failed");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Update failed");
+    }
+
     hideModal();
     loadPantry();
   } catch (err) {
     console.error("❌ Error updating ingredient:", err);
+    alert(err.message || "Failed to update ingredient");
   }
 }
 
@@ -157,17 +202,22 @@ async function removeIngredient(id) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/ingredients/${id}`, {
       method: "DELETE",
+      credentials: 'include',
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     });
 
-    if (!response.ok) throw new Error("Delete failed");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Delete failed");
+    }
+
     loadPantry();
   } catch (err) {
     console.error("❌ Error deleting ingredient:", err);
-    alert(err.message);
+    alert(err.message || "Failed to delete ingredient");
   }
 }
 
@@ -178,18 +228,24 @@ async function loadPantry() {
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/ingredients`, {
+      credentials: 'include',
       headers: {
         "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+        "Content-Type": "application/json"
+      }
     });
 
-    if (!response.ok) throw new Error("Fetch failed");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to load pantry");
+    }
+
     const ingredients = await response.json();
     updatePantryUI(ingredients);
     updateCO2Component(ingredients);
   } catch (err) {
     console.error("❌ Error loading pantry:", err);
+    alert(err.message || "Failed to load pantry");
   }
 }
 
