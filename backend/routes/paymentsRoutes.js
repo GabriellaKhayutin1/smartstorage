@@ -69,6 +69,10 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
 
         // Create checkout session
         try {
+            const baseUrl = process.env.NODE_ENV === 'production'
+                ? 'https://smartstorage-k0v4.onrender.com'
+                : 'http://localhost:5003';
+
             const session = await stripe.checkout.sessions.create({
                 customer: customer.id,
                 payment_method_types: ['card'],
@@ -79,8 +83,8 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
                         quantity: 1,
                     },
                 ],
-                success_url: `${process.env.FRONTEND_URL}/subscribe_payment.html?session_id={CHECKOUT_SESSION_ID}&status=success`,
-                cancel_url: `${process.env.FRONTEND_URL}/subscribe_payment.html?status=cancelled`,
+                success_url: `${baseUrl}/subscribe_payment.html?session_id={CHECKOUT_SESSION_ID}&status=success`,
+                cancel_url: `${baseUrl}/subscribe_payment.html?status=cancelled`,
                 metadata: {
                     userId: user.userId
                 }
