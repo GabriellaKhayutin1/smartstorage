@@ -1,4 +1,4 @@
-import { calculateCO2Savings, fetchWithAuth, logout, getToken, isAuthenticated } from './auth.js';
+import { calculateCO2Savings, fetchWithAuth, logout, getToken, isAuthenticated, removeToken } from './auth.js';
 
 // Define CO2 savings constants
 const CO2_SAVINGS = {
@@ -28,10 +28,9 @@ if (urlToken) {
 // ✅ DOM ready
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 DOMContentLoaded: Starting dashboard page initialization..."); 
-    // Use isAuthenticated from auth.js
     if (!isAuthenticated()) { 
         console.log("❌ No token/auth, redirecting to login");
-        return redirectToLogin(); // Keep existing redirect helper if it does more
+        return redirectToLogin();
     }
     console.log("✅ Token found, loading dashboard");
 
@@ -47,9 +46,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         // Verify token is valid by checking profile
+        const token = getToken(); // Use getToken from auth.js
         const profileResponse = await fetch(`${API_BASE_URL}/api/profile`, {
             headers: { 
-                'Authorization': `Bearer ${urlToken}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             credentials: 'include'
@@ -238,12 +238,16 @@ async function removeIngredient(id) {
 
 /* 🔹 Load Pantry */
 async function loadPantry() {
-    const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken");
+    const token = getToken();
     if (!token) return redirectToLogin();
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/ingredients`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -255,13 +259,18 @@ async function loadPantry() {
         const co2DisplayElement = document.getElementById('co2-saved-value');
         if (co2DisplayElement) {
             co2DisplayElement.textContent = totalCo2Saved.toFixed(1);
-            console.log(` pantry display`, totalCo2Saved);
+            console.log(`pantry display`, totalCo2Saved);
         }
 
         updatePantryUI(ingredients);
     } catch (err) {
         console.error("❌ Error loading pantry:", err);
-        alert(err.message || "Failed to load pantry");
+        if (err.message.includes('401')) {
+            removeToken();
+            redirectToLogin();
+        } else {
+            alert(err.message || "Failed to load pantry");
+        }
     }
 }
 
