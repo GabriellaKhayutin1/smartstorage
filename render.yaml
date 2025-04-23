@@ -1,22 +1,23 @@
 services:
   - type: web
-    name: smartpantry-backend
+    name: smartstorage
     env: node
-    rootDir: backend
-    buildCommand: cd backend && npm install
+    buildCommand: npm install
     startCommand: cd backend && node server.js
     envVars:
-      - key: MONGO_URI
-        value: mongodb+srv://gabriellakhayutin:eJFpHec5kdAcVifG@cluster0.rlyvv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
       - key: JWT_SECRET
-        value: your_jwt_secret
+        sync: false
       - key: SESSION_SECRET
-        value: your_session_secret
+        sync: false
       - key: GOOGLE_CLIENT_ID
-        value: your_google_client_id
+        sync: false
       - key: GOOGLE_CLIENT_SECRET
-        value: your_google_client_secret
-      - key: MOLLIE_API_KEY
-        value: your_mollie_api_key
-      - key: FRONTEND_URL
-        value: https://smartpantry.onrender.com
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PREMIUM_PRICE_ID
+        sync: false

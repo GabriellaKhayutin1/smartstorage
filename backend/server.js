@@ -97,7 +97,8 @@ app.use('/api/payments/webhook', express.raw({type: 'application/json'}));
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Serve static files from the public directory
+// ✅ Serve static files
+app.use(express.static(path.join(__dirname, '../')));
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
 // ✅ Session Middleware with MongoDB Store
@@ -620,9 +621,12 @@ app.post("/api/test-calendar-event", authenticate, async (req, res) => {
 });
 */
 
-// Serve index.html for any other routes (useful for SPA routing)
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "index.html"));
+// Handle all other routes by serving index.html
+app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (!req.url.startsWith('/api/')) {
+        res.sendFile(path.join(__dirname, '../index.html'));
+    }
 });
 
 // --- Background Task: Check for expiring ingredients --- 
