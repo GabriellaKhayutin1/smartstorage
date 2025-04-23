@@ -128,7 +128,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use('/api/payments', paymentsRoutes);
 
 // ✅ Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log("✅ Connected to MongoDB"))
