@@ -220,11 +220,11 @@ function updateCO2Chart(monthlyData) {
 
     const chartYear = new Date().getFullYear();
 
-    if (window.monthlyCO2Chart instanceof Chart) {
+    if (window.monthlyCO2Chart instanceof window.Chart) {
         window.monthlyCO2Chart.destroy();
     }
 
-    window.monthlyCO2Chart = new Chart(ctx, {
+    window.monthlyCO2Chart = new window.Chart(ctx, {
         type: 'bar',
         data: {
             labels: monthNames,
