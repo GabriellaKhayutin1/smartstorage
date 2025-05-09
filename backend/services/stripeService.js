@@ -266,4 +266,4 @@ export const handleWebhook = async (event) => {
         // Instead, log the error and return success to Stripe, handle the fallout manually/alerting.
         // throw error; // Avoid re-throwing in production webhook handlers unless you are sure
     }
-}; 
+};

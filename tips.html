@@ -142,11 +142,11 @@
                            class="search-input w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-green-500">
                 </div>
                 <div class="flex gap-2 overflow-x-auto pb-2 w-full md:w-1/2">
-                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">All</button>
-                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Fruits</button>
-                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Vegetables</button>
-                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Dairy</button>
-                    <button class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Meat</button>
+                    <button onclick="filterTips('all')" class="category-badge px-4 py-2 rounded-full bg-green-500 text-white whitespace-nowrap">All</button>
+                    <button onclick="filterTips('fruits')" class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Fruits</button>
+                    <button onclick="filterTips('vegetables')" class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Vegetables</button>
+                    <button onclick="filterTips('dairy')" class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Dairy</button>
+                    <button onclick="filterTips('meat')" class="category-badge px-4 py-2 rounded-full bg-green-100 text-green-700 whitespace-nowrap">Meat</button>
                 </div>
             </div>
         </div>
@@ -765,6 +765,126 @@
     </div>
 
     <script>
+        // Add this function at the beginning of your script section
+        function filterTips(category) {
+            const tipCards = document.querySelectorAll('.tip-card');
+            const categoryButtons = document.querySelectorAll('.category-badge');
+            
+            // Update button styles
+            categoryButtons.forEach(btn => {
+                if (btn.textContent.toLowerCase() === category) {
+                    btn.classList.remove('bg-green-100', 'text-green-700');
+                    btn.classList.add('bg-green-500', 'text-white');
+                } else {
+                    btn.classList.remove('bg-green-500', 'text-white');
+                    btn.classList.add('bg-green-100', 'text-green-700');
+                }
+            });
+
+            // Filter the cards
+            tipCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                if (category === 'all' || cardCategory === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Check authentication
+            if (!checkAuth()) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const tipCards = document.querySelectorAll('.tip-card');
+
+            // Function to calculate similarity between two strings
+            function similarity(s1, s2) {
+                let longer = s1;
+                let shorter = s2;
+                if (s1.length < s2.length) {
+                    longer = s2;
+                    shorter = s1;
+                }
+                const longerLength = longer.length;
+                if (longerLength === 0) {
+                    return 1.0;
+                }
+                const editDistance = levenshteinDistance(longer, shorter);
+                return (longerLength - editDistance) / parseFloat(longerLength);
+            }
+
+            // Function to calculate Levenshtein distance
+            function levenshteinDistance(s1, s2) {
+                s1 = s1.toLowerCase();
+                s2 = s2.toLowerCase();
+
+                const costs = new Array();
+                for (let i = 0; i <= s1.length; i++) {
+                    let lastValue = i;
+                    for (let j = 0; j <= s2.length; j++) {
+                        if (i === 0) {
+                            costs[j] = j;
+                        } else {
+                            if (j > 0) {
+                                let newValue = costs[j - 1];
+                                if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+                                    newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                                }
+                                costs[j - 1] = lastValue;
+                                lastValue = newValue;
+                            }
+                        }
+                    }
+                    if (i > 0) {
+                        costs[s2.length] = lastValue;
+                    }
+                }
+                return costs[s2.length];
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (searchTerm.length === 0) {
+                    tipCards.forEach(card => card.style.display = 'block');
+                    return;
+                }
+
+                tipCards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    const content = card.querySelector('p').textContent.toLowerCase();
+                    const words = searchTerm.split(' ');
+
+                    // Check each word in the search term
+                    const matches = words.some(word => {
+                        if (word.length < 2) return false; // Skip very short words
+                        
+                        // Check title similarity
+                        const titleWords = title.split(' ');
+                        const titleMatch = titleWords.some(titleWord => similarity(titleWord, word) > 0.7);
+                        
+                        // Check content for exact matches or similar words
+                        const contentWords = content.split(' ');
+                        const contentMatch = contentWords.some(contentWord => similarity(contentWord, word) > 0.7);
+
+                        return titleMatch || contentMatch || 
+                               title.includes(word) || 
+                               content.includes(word);
+                    });
+
+                    card.style.display = matches ? 'block' : 'none';
+                });
+            });
+        });
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Storage tips database
             const storageTips = {
@@ -1097,120 +1217,6 @@
                 seasonalGuide.scrollIntoView({ 
                     behavior: 'smooth',
                     block: 'center'
-                });
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Check authentication
-            if (!checkAuth()) {
-                window.location.href = '/login.html';
-                return;
-            }
-
-            // Search functionality
-            const searchInput = document.querySelector('.search-input');
-            const tipCards = document.querySelectorAll('.tip-card');
-
-            // Function to calculate similarity between two strings
-            function similarity(s1, s2) {
-                let longer = s1;
-                let shorter = s2;
-                if (s1.length < s2.length) {
-                    longer = s2;
-                    shorter = s1;
-                }
-                const longerLength = longer.length;
-                if (longerLength === 0) {
-                    return 1.0;
-                }
-                const editDistance = levenshteinDistance(longer, shorter);
-                return (longerLength - editDistance) / parseFloat(longerLength);
-            }
-
-            // Function to calculate Levenshtein distance
-            function levenshteinDistance(s1, s2) {
-                s1 = s1.toLowerCase();
-                s2 = s2.toLowerCase();
-
-                const costs = new Array();
-                for (let i = 0; i <= s1.length; i++) {
-                    let lastValue = i;
-                    for (let j = 0; j <= s2.length; j++) {
-                        if (i === 0) {
-                            costs[j] = j;
-                        } else {
-                            if (j > 0) {
-                                let newValue = costs[j - 1];
-                                if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
-                                    newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                                }
-                                costs[j - 1] = lastValue;
-                                lastValue = newValue;
-                            }
-                        }
-                    }
-                    if (i > 0) {
-                        costs[s2.length] = lastValue;
-                    }
-                }
-                return costs[s2.length];
-            }
-
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                
-                if (searchTerm.length === 0) {
-                    tipCards.forEach(card => card.style.display = 'block');
-                    return;
-                }
-
-                tipCards.forEach(card => {
-                    const title = card.querySelector('h3').textContent.toLowerCase();
-                    const content = card.querySelector('p').textContent.toLowerCase();
-                    const words = searchTerm.split(' ');
-
-                    // Check each word in the search term
-                    const matches = words.some(word => {
-                        if (word.length < 2) return false; // Skip very short words
-                        
-                        // Check title similarity
-                        const titleWords = title.split(' ');
-                        const titleMatch = titleWords.some(titleWord => similarity(titleWord, word) > 0.7);
-                        
-                        // Check content for exact matches or similar words
-                        const contentWords = content.split(' ');
-                        const contentMatch = contentWords.some(contentWord => similarity(contentWord, word) > 0.7);
-
-                        return titleMatch || contentMatch || 
-                               title.includes(word) || 
-                               content.includes(word);
-                    });
-
-                    card.style.display = matches ? 'block' : 'none';
-                });
-            });
-
-            // Category filter functionality
-            const categoryButtons = document.querySelectorAll('.category-badge');
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Remove active state from all buttons
-                    categoryButtons.forEach(btn => btn.classList.remove('bg-green-500', 'text-white'));
-                    // Add active state to clicked button
-                    button.classList.add('bg-green-500', 'text-white');
-                    
-                    const selectedCategory = button.textContent.toLowerCase();
-                    tipCards.forEach(card => {
-                        const cardCategory = card.getAttribute('data-category');
-                        if (selectedCategory === 'all' || cardCategory === selectedCategory) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
                 });
             });
         });
