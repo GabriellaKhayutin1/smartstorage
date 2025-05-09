@@ -799,86 +799,29 @@
                 return;
             }
 
-            // Search functionality
+            // Get the search input and all tip cards
             const searchInput = document.querySelector('.search-input');
             const tipCards = document.querySelectorAll('.tip-card');
 
-            // Function to calculate similarity between two strings
-            function similarity(s1, s2) {
-                let longer = s1;
-                let shorter = s2;
-                if (s1.length < s2.length) {
-                    longer = s2;
-                    shorter = s1;
-                }
-                const longerLength = longer.length;
-                if (longerLength === 0) {
-                    return 1.0;
-                }
-                const editDistance = levenshteinDistance(longer, shorter);
-                return (longerLength - editDistance) / parseFloat(longerLength);
-            }
-
-            // Function to calculate Levenshtein distance
-            function levenshteinDistance(s1, s2) {
-                s1 = s1.toLowerCase();
-                s2 = s2.toLowerCase();
-
-                const costs = new Array();
-                for (let i = 0; i <= s1.length; i++) {
-                    let lastValue = i;
-                    for (let j = 0; j <= s2.length; j++) {
-                        if (i === 0) {
-                            costs[j] = j;
-                        } else {
-                            if (j > 0) {
-                                let newValue = costs[j - 1];
-                                if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
-                                    newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                                }
-                                costs[j - 1] = lastValue;
-                                lastValue = newValue;
-                            }
-                        }
-                    }
-                    if (i > 0) {
-                        costs[s2.length] = lastValue;
-                    }
-                }
-                return costs[s2.length];
-            }
-
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
+            // Add event listener for search input
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
                 
-                if (searchTerm.length === 0) {
-                    tipCards.forEach(card => card.style.display = 'block');
-                    return;
-                }
-
+                // Loop through all tip cards
                 tipCards.forEach(card => {
+                    // Get the title and content text
                     const title = card.querySelector('h3').textContent.toLowerCase();
                     const content = card.querySelector('p').textContent.toLowerCase();
-                    const words = searchTerm.split(' ');
-
-                    // Check each word in the search term
-                    const matches = words.some(word => {
-                        if (word.length < 2) return false; // Skip very short words
-                        
-                        // Check title similarity
-                        const titleWords = title.split(' ');
-                        const titleMatch = titleWords.some(titleWord => similarity(titleWord, word) > 0.7);
-                        
-                        // Check content for exact matches or similar words
-                        const contentWords = content.split(' ');
-                        const contentMatch = contentWords.some(contentWord => similarity(contentWord, word) > 0.7);
-
-                        return titleMatch || contentMatch || 
-                               title.includes(word) || 
-                               content.includes(word);
-                    });
-
-                    card.style.display = matches ? 'block' : 'none';
+                    const category = card.getAttribute('data-category');
+                    
+                    // Check if the search term matches any part of the card
+                    if (title.includes(searchTerm) || 
+                        content.includes(searchTerm) || 
+                        category.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
                 });
             });
         });
@@ -1243,6 +1186,54 @@
                 mobileMenu.classList.add('hidden');
             }
         });
+    </script>
+
+    <script>
+        // Initialize search functionality
+        function initializeSearch() {
+            console.log('Initializing search...');
+            const searchInput = document.querySelector('.search-input');
+            const tipCards = document.querySelectorAll('.tip-card');
+
+            if (!searchInput || !tipCards.length) {
+                console.error('Required elements not found');
+                return;
+            }
+
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                console.log('Searching for:', searchTerm);
+
+                tipCards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    const content = card.querySelector('p').textContent.toLowerCase();
+                    const category = card.getAttribute('data-category');
+                    
+                    const isVisible = searchTerm === '' || 
+                        title.includes(searchTerm) || 
+                        content.includes(searchTerm) || 
+                        category.includes(searchTerm);
+
+                    card.style.display = isVisible ? 'block' : 'none';
+                });
+            }
+
+            // Add event listeners
+            searchInput.addEventListener('input', performSearch);
+            
+            // Also trigger search when pressing Enter in the input
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // Initial search
+            performSearch();
+        }
+
+        // Call initializeSearch when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeSearch);
     </script>
     <!-- 🌿 Footer -->
     <footer class="bg-white border-gray-200 mt-20 shadow-inner">
